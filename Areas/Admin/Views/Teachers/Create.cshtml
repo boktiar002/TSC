@@ -1,0 +1,26 @@
+﻿@model TSC.Models.Teacher
+
+@{
+    ViewData["Title"] = "Add Teacher";
+}
+
+<h1>Add Teacher</h1>
+<p class="text-muted">Enter the teacher's details.</p>
+<hr />
+
+<div class="row">
+    <div class="col-lg-7">
+        <form asp-action="Create" method="post">
+            <partial name="_Fields" model="Model" />
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Add Teacher</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

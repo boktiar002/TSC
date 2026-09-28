@@ -1,0 +1,198 @@
+﻿@model TSC.Models.Student
+
+@{
+    ViewData["Title"] = "Student Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h1>@Model.FullName</h1>
+        <p class="text-muted mb-0">
+            Student ID: @Model.StudentId
+        </p>
+    </div>
+
+    <div>
+        <a asp-controller="Attendance" asp-action="Student" asp-route-id="@Model.Id"
+           class="btn btn-outline-primary">
+            Attendance
+        </a>
+
+        <a asp-controller="Payments" asp-action="Student" asp-route-id="@Model.Id"
+           class="btn btn-outline-primary">
+            Fees
+        </a>
+
+        <a asp-action="Edit"
+           asp-route-id="@Model.Id"
+           class="btn btn-primary">
+            Edit
+        </a>
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+            Back
+        </a>
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col-md-6 mb-4">
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>Academic Information</strong>
+            </div>
+
+            <div class="card-body">
+
+                <dl class="row mb-0">
+
+                    <dt class="col-sm-5">
+                        Student ID
+                    </dt>
+
+                    <dd class="col-sm-7">
+                        @Model.StudentId
+                    </dd>
+
+                    <dt class="col-sm-5">
+                        Class
+                    </dt>
+
+                    <dd class="col-sm-7">
+                        Class @Model.ClassLevel
+                    </dd>
+
+                    <dt class="col-sm-5">
+                        Batch
+                    </dt>
+
+                    <dd class="col-sm-7">
+                        @Model.Batch?.Name
+                    </dd>
+
+                </dl>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-6 mb-4">
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>Contact Information</strong>
+            </div>
+
+            <div class="card-body">
+
+                <dl class="row mb-0">
+
+                    <dt class="col-sm-5">
+                        Phone
+                    </dt>
+
+                    <dd class="col-sm-7">
+                        @Model.Phone
+                    </dd>
+
+                    <dt class="col-sm-5">
+                        Email
+                    </dt>
+
+                    <dd class="col-sm-7">
+                        @Model.Email
+                    </dd>
+
+                    <dt class="col-sm-5">
+                        Address
+                    </dt>
+
+                    <dd class="col-sm-7">
+                        @Model.Address
+                    </dd>
+
+                </dl>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-6 mb-4">
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>Guardian Information</strong>
+            </div>
+
+            <div class="card-body">
+
+                <dl class="row mb-0">
+
+                    <dt class="col-sm-5">
+                        Guardian
+                    </dt>
+
+                    <dd class="col-sm-7">
+                        @Model.GuardianName
+                    </dd>
+
+                    <dt class="col-sm-5">
+                        Guardian Phone
+                    </dt>
+
+                    <dd class="col-sm-7">
+                        @Model.GuardianPhone
+                    </dd>
+
+                </dl>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<div class="card shadow-sm">
+    <div class="card-header"><strong>Portal login</strong></div>
+    <div class="card-body">
+
+        @if (Model.UserId != null)
+        {
+            <p class="mb-3">
+                <span class="badge bg-success">Active</span>
+                <span class="text-muted ms-2">@Model.Email</span>
+            </p>
+
+            <form asp-action="RemoveLogin" asp-route-id="@Model.Id" method="post"
+                  onsubmit="return confirm('Remove @Model.FullName\u0027s login? They will lose access to the portal.');">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Remove login</button>
+            </form>
+        }
+        else
+        {
+            <p class="text-muted">
+                No login yet. Creating one lets @Model.FullName sign in to see their own
+                results, attendance and fees.
+            </p>
+
+            <form asp-action="CreateLogin" asp-route-id="@Model.Id" method="post" class="row g-2">
+                <div class="col-sm-6">
+                    <input type="email" name="email" class="form-control"
+                           value="@Model.Email" placeholder="Email address" required />
+                </div>
+
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-primary w-100">Create login</button>
+                </div>
+            </form>
+        }
+
+    </div>
+</div>

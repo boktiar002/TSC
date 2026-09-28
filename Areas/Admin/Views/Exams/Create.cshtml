@@ -1,0 +1,50 @@
+@model TSC.Models.Exam
+
+@{
+    ViewData["Title"] = "Create Exam";
+    var batches = (IEnumerable<TSC.Models.Batch>)ViewBag.Batches;
+}
+
+<h1>Create Exam</h1>
+<p class="text-muted">You'll pick which subjects it covers on the next screen.</p>
+<hr />
+
+<div class="row">
+    <div class="col-lg-6">
+        <form asp-action="Create" method="post">
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" placeholder="Example: Mid-Term 2026" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="BatchId" class="form-label"></label>
+                <select asp-for="BatchId" class="form-select"
+                        asp-items="@(new SelectList(batches, "Id", "Name"))">
+                    <option value="">-- Select Batch --</option>
+                </select>
+                <span asp-validation-for="BatchId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ExamDate" class="form-label"></label>
+                <input asp-for="ExamDate" type="date" class="form-control" />
+                <span asp-validation-for="ExamDate" class="text-danger"></span>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Create Exam</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

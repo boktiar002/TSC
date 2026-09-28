@@ -1,0 +1,71 @@
+@model IEnumerable<TSC.Models.Exam>
+
+@{
+    ViewData["Title"] = "Exams";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Exams</h1>
+        <p class="text-muted mb-0">Create an exam, set its papers, then enter marks.</p>
+    </div>
+
+    <a asp-action="Create" class="btn btn-primary">+ Create Exam</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <h5>No exams yet</h5>
+                <p class="text-muted">Create one to start recording marks.</p>
+                <a asp-action="Create" class="btn btn-primary">Create Exam</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Exam</th>
+                            <th>Batch</th>
+                            <th>Date</th>
+                            <th>Papers</th>
+                            <th>Marks entered</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var exam in Model)
+                        {
+                            <tr>
+                                <td><strong>@exam.Name</strong></td>
+                                <td>@exam.Batch?.Name</td>
+                                <td>@exam.ExamDate.ToString("dd MMM yyyy")</td>
+                                <td>@exam.ExamSubjects.Count</td>
+                                <td>@exam.Marks.Count</td>
+                                <td class="text-end">
+                                    <a asp-action="Details" asp-route-id="@exam.Id"
+                                       class="btn btn-sm btn-outline-primary">Papers</a>
+
+                                    <a asp-action="Results" asp-route-id="@exam.Id"
+                                       class="btn btn-sm btn-outline-secondary">Results</a>
+
+                                    <form asp-action="Delete" asp-route-id="@exam.Id" method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Delete @exam.Name?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+    </div>
+</div>

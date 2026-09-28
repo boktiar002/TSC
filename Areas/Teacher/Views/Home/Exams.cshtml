@@ -1,0 +1,65 @@
+@model IEnumerable<TSC.Models.Exam>
+
+@{
+    ViewData["Title"] = "Exams";
+    var me = (TSC.Models.Teacher)ViewBag.Teacher;
+}
+
+<h1>Exams</h1>
+<p class="text-muted">Only exams with a paper in a subject you teach.</p>
+<hr />
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Nothing to mark right now.</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Exam</th>
+                        <th>Batch</th>
+                        <th>Date</th>
+                        <th>My papers</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var exam in Model)
+                    {
+                        var mySubjectIds = me.BatchSubjects
+                            .Where(bs => bs.BatchId == exam.BatchId)
+                            .Select(bs => bs.SubjectId)
+                            .ToHashSet();
+
+                        var mine = exam.ExamSubjects
+                            .Where(es => mySubjectIds.Contains(es.SubjectId))
+                            .OrderBy(es => es.Subject?.Name)
+                            .ToList();
+
+                        <tr>
+                            <td><strong>@exam.Name</strong></td>
+                            <td>@exam.Batch?.Name</td>
+                            <td>@exam.ExamDate.ToString("dd MMM yyyy")</td>
+                            <td>
+                                @foreach (var paper in mine)
+                                {
+                                    <span class="badge bg-light text-dark border me-1">
+                                        @paper.Subject?.Name / @paper.FullMarks.ToString("0.##")
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Marks" asp-route-id="@exam.Id"
+                                   class="btn btn-sm btn-outline-primary">Enter marks</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

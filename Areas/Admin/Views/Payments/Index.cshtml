@@ -1,0 +1,159 @@
+@model IEnumerable<TSC.Models.Student>
+
+@{
+    ViewData["Title"] = "Fees";
+
+    var batches = (IEnumerable<TSC.Models.Batch>)ViewBag.Batches;
+    var batchId = (int?)ViewBag.BatchId;
+    var month = (DateOnly)ViewBag.Month;
+    var batch = ViewBag.Batch as TSC.Models.Batch;
+    var paid = ViewBag.PaidByStudent as Dictionary<int, decimal> ?? new Dictionary<int, decimal>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Fees</h1>
+        <p class="text-muted mb-0">Monthly collection and outstanding balances.</p>
+    </div>
+
+    <a asp-action="Create" asp-route-month="@month.ToString("yyyy-MM-dd")" class="btn btn-primary">
+        + Record Payment
+    </a>
+</div>
+
+<form method="get" class="row g-2 align-items-end mb-4">
+    <div class="col-sm-4">
+        <label for="batchId" class="form-label">Batch</label>
+        <select id="batchId" name="batchId" class="form-select" required
+                asp-items="@(new SelectList(batches, "Id", "Name", batchId))">
+            <option value="">Select a batch...</option>
+        </select>
+    </div>
+
+    <div class="col-sm-3">
+        <label for="month" class="form-label">Month</label>
+        <input id="month" name="month" type="month" class="form-control"
+               value="@month.ToString("yyyy-MM")" />
+    </div>
+
+    <div class="col-sm-2">
+        <button type="submit" class="btn btn-primary w-100">Load</button>
+    </div>
+</form>
+
+@if (batchId == null)
+{
+    <div class="alert alert-info">Choose a batch to see who has paid.</div>
+}
+else if (batch!.MonthlyFee <= 0)
+{
+    <div class="alert alert-warning">
+        <strong>@batch.Name</strong> has no monthly fee set, so there is nothing to collect.
+        <a asp-controller="Batches" asp-action="Edit" asp-route-id="@batch.Id">Set the fee</a>.
+    </div>
+}
+else if (!Model.Any())
+{
+    <div class="alert alert-warning">@batch.Name has no students yet.</div>
+}
+else
+{
+    var fee = batch.MonthlyFee;
+    var collected = Model.Sum(s => paid.TryGetValue(s.Id, out var v) ? v : 0m);
+    var expected = fee * Model.Count();
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Expected</h6>
+                    <p class="h3 mb-0">@expected.ToString("0.##")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Collected</h6>
+                    <p class="h3 mb-0 text-success">@collected.ToString("0.##")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Outstanding</h6>
+                    <p class="h3 mb-0 text-danger">@((expected - collected).ToString("0.##"))</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <strong>@batch.Name &middot; @month.ToString("MMMM yyyy")</strong>
+            <span class="float-end text-muted">Fee @fee.ToString("0.##") per student</span>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th class="text-end">Fee</th>
+                        <th class="text-end">Paid</th>
+                        <th class="text-end">Balance</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var student in Model)
+                    {
+                        var amountPaid = paid.TryGetValue(student.Id, out var v) ? v : 0m;
+                        var balance = fee - amountPaid;
+
+                        <tr>
+                            <td>@student.StudentId</td>
+                            <td>@student.FullName</td>
+                            <td class="text-end">@fee.ToString("0.##")</td>
+                            <td class="text-end">@amountPaid.ToString("0.##")</td>
+                            <td class="text-end @(balance > 0 ? "text-danger fw-bold" : "")">
+                                @balance.ToString("0.##")
+                            </td>
+                            <td>
+                                @if (amountPaid <= 0)
+                                {
+                                    <span class="badge bg-danger">Unpaid</span>
+                                }
+                                else if (balance > 0)
+                                {
+                                    <span class="badge bg-warning text-dark">Partial</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Paid</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (balance > 0)
+                                {
+                                    <a asp-action="Create"
+                                       asp-route-studentId="@student.Id"
+                                       asp-route-month="@month.ToString("yyyy-MM-dd")"
+                                       class="btn btn-sm btn-outline-primary">Collect</a>
+                                }
+
+                                <a asp-action="Student" asp-route-id="@student.Id"
+                                   class="btn btn-sm btn-outline-secondary">History</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

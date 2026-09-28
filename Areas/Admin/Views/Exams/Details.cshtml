@@ -1,0 +1,120 @@
+@model TSC.Models.Exam
+
+@{
+    ViewData["Title"] = Model.Name;
+    var available = (IEnumerable<TSC.Models.Subject>)ViewBag.AvailableSubjects;
+    var studentCount = (int)ViewBag.StudentCount;
+    var papers = Model.ExamSubjects.OrderBy(es => es.Subject?.Name).ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>@Model.Name</h1>
+        <p class="text-muted mb-0">
+            @Model.Batch?.Name &middot; @Model.ExamDate.ToString("dd MMM yyyy") &middot;
+            @studentCount student@(studentCount == 1 ? "" : "s")
+        </p>
+    </div>
+
+    <div>
+        @if (papers.Any())
+        {
+            <a asp-action="Marks" asp-route-id="@Model.Id" class="btn btn-primary">Enter Marks</a>
+            <a asp-action="Results" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Results</a>
+        }
+
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <strong>Papers</strong>
+        <span class="badge bg-secondary float-end">@papers.Count</span>
+    </div>
+
+    <div class="card-body">
+
+        @if (!papers.Any())
+        {
+            <p class="text-muted">No subjects on this exam yet. Add one below.</p>
+        }
+        else
+        {
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Full Marks</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var paper in papers)
+                    {
+                        <tr>
+                            <td>@paper.Subject?.Name</td>
+                            <td>@paper.FullMarks.ToString("0.##")</td>
+                            <td class="text-end">
+                                <a asp-action="Marks" asp-route-id="@Model.Id"
+                                   asp-route-subjectId="@paper.SubjectId"
+                                   class="btn btn-sm btn-outline-primary">Enter marks</a>
+
+                                <form asp-action="RemoveSubject" asp-route-id="@Model.Id" method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Remove @paper.Subject?.Name from this exam?');">
+                                    <input type="hidden" name="examSubjectId" value="@paper.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        <hr />
+
+        @if (!available.Any())
+        {
+            <p class="text-muted mb-0">
+                @if (!papers.Any())
+                {
+                    <text>
+                        No subjects are assigned to @Model.Batch?.Name yet.
+                        Assign them on the
+                        <a asp-controller="Batches" asp-action="Details" asp-route-id="@Model.BatchId">batch page</a>
+                        first.
+                    </text>
+                }
+                else
+                {
+                    <text>Every subject taught to this batch is already on the exam.</text>
+                }
+            </p>
+        }
+        else
+        {
+            <form asp-action="AddSubject" asp-route-id="@Model.Id" method="post" class="row g-2 align-items-end">
+                <div class="col-sm-5">
+                    <label for="subjectId" class="form-label">Subject</label>
+                    <select id="subjectId" name="subjectId" class="form-select" required
+                            asp-items="@(new SelectList(available, "Id", "Name"))">
+                        <option value="">Select a subject...</option>
+                    </select>
+                </div>
+
+                <div class="col-sm-3">
+                    <label for="fullMarks" class="form-label">Full marks</label>
+                    <input id="fullMarks" name="fullMarks" type="number" step="0.01" min="1"
+                           value="100" class="form-control" required />
+                </div>
+
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-primary w-100">Add Paper</button>
+                </div>
+            </form>
+        }
+
+    </div>
+</div>

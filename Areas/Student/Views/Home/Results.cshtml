@@ -1,0 +1,94 @@
+@{
+    ViewData["Title"] = "My Results";
+
+    var student = (TSC.Models.Student)ViewBag.Student;
+    var exams = (IEnumerable<TSC.Models.Exam>)ViewBag.Exams;
+    var scores = (Dictionary<(int ExamId, int SubjectId), decimal>)ViewBag.Scores;
+}
+
+<h1>My Results</h1>
+<p class="text-muted">@student.StudentId &middot; @student.Batch?.Name</p>
+<hr />
+
+@if (!exams.Any())
+{
+    <div class="alert alert-info">No exam results published for you yet.</div>
+}
+else
+{
+    @foreach (var exam in exams)
+    {
+        var papers = exam.ExamSubjects.OrderBy(es => es.Subject?.Name).ToList();
+
+        // Grade only what was actually marked, so a half-entered exam isn't shown as a fail.
+        var marked = papers.Where(p => scores.ContainsKey((exam.Id, p.SubjectId))).ToList();
+        var obtained = marked.Sum(p => scores[(exam.Id, p.SubjectId)]);
+        var outOf = marked.Sum(p => p.FullMarks);
+        var percentage = TSC.Models.Grading.Percentage(obtained, outOf);
+
+        var failedAPaper = marked.Any(p =>
+            TSC.Models.Grading.Percentage(scores[(exam.Id, p.SubjectId)], p.FullMarks) < 33);
+
+        var grade = failedAPaper ? ("F", 0.00m) : TSC.Models.Grading.For(percentage);
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@exam.Name</strong>
+                    <small class="text-muted ms-2">@exam.ExamDate.ToString("dd MMM yyyy")</small>
+                </div>
+
+                <div>
+                    <span class="badge bg-@TSC.Models.Grading.Colour(grade.Item1) fs-6">@grade.Item1</span>
+                    <small class="text-muted ms-1">GPA @grade.Item2.ToString("0.00")</small>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <table class="table table-sm mb-3">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th class="text-end">Marks</th>
+                            <th class="text-end">Out of</th>
+                            <th class="text-end">%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var paper in papers)
+                        {
+                            var has = scores.TryGetValue((exam.Id, paper.SubjectId), out var mark);
+                            var pct = has ? TSC.Models.Grading.Percentage(mark, paper.FullMarks) : 0;
+
+                            <tr class="@(has && pct < 33 ? "table-danger" : "")">
+                                <td>@paper.Subject?.Name</td>
+                                <td class="text-end">@(has ? mark.ToString("0.##") : "not marked")</td>
+                                <td class="text-end">@paper.FullMarks.ToString("0.##")</td>
+                                <td class="text-end">@(has ? $"{pct:0.##}%" : "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">
+                        Total @obtained.ToString("0.##") of @outOf.ToString("0.##")
+                        @if (marked.Count < papers.Count)
+                        {
+                            <text>(@marked.Count of @papers.Count papers marked)</text>
+                        }
+                    </span>
+
+                    <strong>@percentage.ToString("0.##")%</strong>
+                </div>
+
+                @if (failedAPaper)
+                {
+                    <div class="alert alert-danger mt-3 mb-0 py-2 small">
+                        A subject below 33% fails the whole exam.
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}

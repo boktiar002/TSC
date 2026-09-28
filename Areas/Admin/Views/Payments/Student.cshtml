@@ -1,0 +1,118 @@
+@model IEnumerable<TSC.Models.Payment>
+
+@{
+    var student = (TSC.Models.Student)ViewBag.Student;
+    ViewData["Title"] = $"Payments — {student.FullName}";
+
+    var fee = student.Batch?.MonthlyFee ?? 0m;
+    var byMonth = Model.GroupBy(p => p.ForMonth).OrderByDescending(g => g.Key).ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>@student.FullName</h1>
+        <p class="text-muted mb-0">
+            @student.StudentId &middot; @student.Batch?.Name &middot; fee @fee.ToString("0.##") / month
+        </p>
+    </div>
+
+    <div>
+        <a asp-action="Create" asp-route-studentId="@student.Id" class="btn btn-primary">
+            Record Payment
+        </a>
+
+        <a asp-action="Index" asp-route-batchId="@student.BatchId" class="btn btn-secondary">
+            Back to fees
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Total paid</h6>
+                <p class="h3 mb-0 text-success">@Model.Sum(p => p.Amount).ToString("0.##")</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Months paid for</h6>
+                <p class="h3 mb-0">@byMonth.Count</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Receipts</h6>
+                <p class="h3 mb-0">@Model.Count()</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        @if (!Model.Any())
+        {
+            <p class="text-muted mb-0">No payments recorded for this student yet.</p>
+        }
+        else
+        {
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>For month</th>
+                        <th>Paid on</th>
+                        <th class="text-end">Amount</th>
+                        <th>Method</th>
+                        <th>Note</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var group in byMonth)
+                    {
+                        var monthTotal = group.Sum(p => p.Amount);
+                        var short_ = fee - monthTotal;
+
+                        @foreach (var payment in group)
+                        {
+                            <tr>
+                                <td>@payment.ForMonth.ToString("MMMM yyyy")</td>
+                                <td>@payment.PaymentDate.ToString("dd MMM yyyy")</td>
+                                <td class="text-end">@payment.Amount.ToString("0.##")</td>
+                                <td>@payment.PaymentMethod</td>
+                                <td class="small text-muted">@payment.Note</td>
+                                <td class="text-end">
+                                    <form asp-action="Delete" asp-route-id="@payment.Id" method="post"
+                                          onsubmit="return confirm('Delete this payment record?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+
+                        @if (short_ > 0 && fee > 0)
+                        {
+                            <tr class="table-warning">
+                                <td colspan="6" class="small">
+                                    @group.Key.ToString("MMMM yyyy"): paid @monthTotal.ToString("0.##")
+                                    of @fee.ToString("0.##") &mdash;
+                                    <strong>@short_.ToString("0.##") still due</strong>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+
+    </div>
+</div>

@@ -1,0 +1,86 @@
+@model IEnumerable<TSC.Models.Student>
+
+@{
+    var exam = (TSC.Models.Exam)ViewBag.Exam;
+    var paper = (TSC.Models.ExamSubject)ViewBag.Paper;
+    var myPapers = (IEnumerable<TSC.Models.ExamSubject>)ViewBag.MyPapers;
+    var entered = (Dictionary<int, decimal>)ViewBag.Entered;
+
+    ViewData["Title"] = $"Marks — {paper.Subject?.Name}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>@exam.Name</h1>
+        <p class="text-muted mb-0">@exam.Batch?.Name &middot; @exam.ExamDate.ToString("dd MMM yyyy")</p>
+    </div>
+
+    <a asp-action="Exams" class="btn btn-secondary">Back to exams</a>
+</div>
+
+@if (myPapers.Count() > 1)
+{
+    <ul class="nav nav-tabs mb-0">
+        @foreach (var other in myPapers.OrderBy(es => es.Subject?.Name))
+        {
+            <li class="nav-item">
+                <a class="nav-link @(other.SubjectId == paper.SubjectId ? "active" : "")"
+                   asp-action="Marks" asp-route-id="@exam.Id" asp-route-subjectId="@other.SubjectId">
+                    @other.Subject?.Name
+                </a>
+            </li>
+        }
+    </ul>
+}
+
+<div class="card shadow-sm @(myPapers.Count() > 1 ? "border-top-0" : "")">
+    <div class="card-body">
+
+        @if (!Model.Any())
+        {
+            <p class="text-muted mb-0">This batch has no students yet.</p>
+        }
+        else
+        {
+            <p class="text-muted">
+                <strong>@paper.Subject?.Name</strong>, out of
+                <strong>@paper.FullMarks.ToString("0.##")</strong>.
+                Leave a box empty for a student who did not sit the paper.
+            </p>
+
+            <form asp-action="Marks" asp-route-id="@exam.Id" method="post">
+                <input type="hidden" name="subjectId" value="@paper.SubjectId" />
+
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th style="width: 10rem;">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model)
+                        {
+                            var score = entered.TryGetValue(student.Id, out var s) ? s.ToString("0.##") : "";
+
+                            <tr>
+                                <td>@student.StudentId</td>
+                                <td>@student.FullName</td>
+                                <td>
+                                    <input type="hidden" name="studentId" value="@student.Id" />
+                                    <input type="number" name="score" value="@score"
+                                           step="0.01" min="0" max="@paper.FullMarks"
+                                           class="form-control form-control-sm" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <button type="submit" class="btn btn-primary">Save Marks</button>
+            </form>
+        }
+
+    </div>
+</div>

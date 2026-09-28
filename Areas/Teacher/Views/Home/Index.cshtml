@@ -1,0 +1,98 @@
+@model TSC.Models.Teacher
+
+@{
+    ViewData["Title"] = "My Dashboard";
+
+    var studentCount = (int)ViewBag.StudentCount;
+    var batchCount = (int)ViewBag.BatchCount;
+    var notices = (IEnumerable<TSC.Models.Notice>)ViewBag.Notices;
+    var byBatch = Model.BatchSubjects.GroupBy(bs => bs.Batch!).OrderBy(g => g.Key.Name).ToList();
+}
+
+<h1>@Model.FullName</h1>
+<p class="text-muted">
+    @Model.TeacherId
+    @if (!string.IsNullOrWhiteSpace(Model.Specialization))
+    {
+        <text>&middot; @Model.Specialization</text>
+    }
+</p>
+<hr />
+
+<div class="row mb-2">
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Batches</h6>
+                <p class="display-6 mb-0">@batchCount</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Students</h6>
+                <p class="display-6 mb-0">@studentCount</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <a asp-action="Exams" class="card shadow-sm h-100 text-decoration-none text-dark">
+            <div class="card-body">
+                <h6 class="text-muted">Exams</h6>
+                <p class="display-6 mb-0">&rarr;</p>
+                <small class="text-muted">enter marks for my papers</small>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header"><strong>What I teach</strong></div>
+    <div class="card-body">
+
+        @if (!byBatch.Any())
+        {
+            <p class="text-muted mb-0">
+                You aren't assigned to any batch yet. The office assigns subjects to teachers
+                from the batch page.
+            </p>
+        }
+        else
+        {
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr><th>Batch</th><th>Subjects</th><th class="text-end"></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var group in byBatch)
+                    {
+                        <tr>
+                            <td><strong>@group.Key.Name</strong></td>
+                            <td>
+                                @foreach (var bs in group.OrderBy(x => x.Subject?.Name))
+                                {
+                                    <span class="badge bg-light text-dark border me-1">@bs.Subject?.Name</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Batch" asp-route-id="@group.Key.Id"
+                                   class="btn btn-sm btn-outline-primary">Students</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header"><strong>Notices</strong></div>
+    <div class="card-body">
+        <partial name="_NoticeBoard" model="notices" />
+    </div>
+</div>

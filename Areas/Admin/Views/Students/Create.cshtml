@@ -1,0 +1,108 @@
+﻿@model TSC.Models.Student
+
+@{
+    ViewData["Title"] = "Add Student";
+    var batches = (IEnumerable<TSC.Models.Batch>)ViewBag.Batches;
+}
+
+<h1>Add Student</h1>
+
+<p class="text-muted">Enter the student's basic information.</p>
+
+<hr />
+
+<div class="row">
+    <div class="col-lg-7">
+
+        <form asp-action="Create" method="post">
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="StudentId" class="form-label"></label>
+                <input asp-for="StudentId" class="form-control" placeholder="Example: ST001" />
+                <span asp-validation-for="StudentId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label"></label>
+                <input asp-for="FullName" class="form-control" placeholder="Student's full name" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="ClassLevel" class="form-label">Class</label>
+                    <select asp-for="ClassLevel" class="form-select">
+                        <option value="">-- Select Class --</option>
+                        <option value="2">Class 2</option>
+                        <option value="3">Class 3</option>
+                        <option value="4">Class 4</option>
+                        <option value="5">Class 5</option>
+                    </select>
+                    <span asp-validation-for="ClassLevel" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label asp-for="BatchId" class="form-label"></label>
+                    <select asp-for="BatchId" class="form-select"
+                            asp-items="@(new SelectList(batches, "Id", "Name"))">
+                        <option value="">-- Select Batch --</option>
+                    </select>
+                    <span asp-validation-for="BatchId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Phone" class="form-label">Student Phone</label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" type="email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DateOfBirth" class="form-label"></label>
+                <input asp-for="DateOfBirth" type="date" class="form-control" />
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Address" class="form-label"></label>
+                <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+
+            <hr />
+
+            <h5 class="mb-3">Guardian Information</h5>
+
+            <div class="mb-3">
+                <label asp-for="GuardianName" class="form-label"></label>
+                <input asp-for="GuardianName" class="form-control" />
+                <span asp-validation-for="GuardianName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="GuardianPhone" class="form-label"></label>
+                <input asp-for="GuardianPhone" class="form-control" />
+                <span asp-validation-for="GuardianPhone" class="text-danger"></span>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Add Student</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

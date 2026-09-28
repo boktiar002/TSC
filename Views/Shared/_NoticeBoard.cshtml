@@ -1,0 +1,21 @@
+@model IEnumerable<TSC.Models.Notice>
+
+@if (!Model.Any())
+{
+    <p class="text-muted mb-0">No notices right now.</p>
+}
+else
+{
+    @foreach (var notice in Model)
+    {
+        <div class="border-start border-3 border-primary ps-3 mb-4">
+            <h6 class="mb-1">@notice.Title</h6>
+
+            <small class="text-muted d-block mb-2">
+                @notice.PublishedAt.ToLocalTime().ToString("dd MMM yyyy, h:mm tt")
+            </small>
+
+            <p class="mb-0" style="white-space: pre-wrap;">@notice.Content</p>
+        </div>
+    }
+}

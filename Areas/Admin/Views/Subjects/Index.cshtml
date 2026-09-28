@@ -1,0 +1,91 @@
+﻿@model TSC.Models.Subject
+
+@{
+    ViewData["Title"] = "Subjects";
+    var subjects = (IEnumerable<TSC.Models.Subject>)ViewBag.Subjects;
+}
+
+<h1>Subjects</h1>
+<p class="text-muted">Subjects are shared across batches; assign them to a batch from the batch page.</p>
+<hr />
+
+<div class="row">
+
+    <div class="col-lg-5 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>Add a subject</strong></div>
+            <div class="card-body">
+
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" placeholder="Example: Mathematics" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Code" class="form-label"></label>
+                        <input asp-for="Code" class="form-control" placeholder="Optional, e.g. MATH" />
+                        <span asp-validation-for="Code" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Add Subject</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                @if (!subjects.Any())
+                {
+                    <p class="text-muted mb-0 py-4 text-center">No subjects yet.</p>
+                }
+                else
+                {
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Code</th>
+                                <th>Batches</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var subject in subjects)
+                            {
+                                <tr>
+                                    <td><strong>@subject.Name</strong></td>
+                                    <td>@subject.Code</td>
+                                    <td>@subject.BatchSubjects.Count</td>
+                                    <td class="text-end">
+                                        <a asp-action="Edit" asp-route-id="@subject.Id"
+                                           class="btn btn-sm btn-outline-secondary">Edit</a>
+
+                                        <form asp-action="Delete" asp-route-id="@subject.Id" method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Delete @subject.Name?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

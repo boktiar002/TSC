@@ -1,0 +1,71 @@
+@model IEnumerable<TSC.Models.Payment>
+
+@{
+    ViewData["Title"] = "My Fees";
+
+    var student = (TSC.Models.Student)ViewBag.Student;
+    var fee = student.Batch?.MonthlyFee ?? 0m;
+    var byMonth = Model.GroupBy(p => p.ForMonth).OrderByDescending(g => g.Key).ToList();
+}
+
+<h1>My Fees</h1>
+<p class="text-muted">
+    @student.StudentId &middot; @student.Batch?.Name
+    @if (fee > 0)
+    {
+        <text>&middot; @fee.ToString("0.##") per month</text>
+    }
+</p>
+<hr />
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        @if (!Model.Any())
+        {
+            <p class="text-muted mb-0">No payments recorded yet.</p>
+        }
+        else
+        {
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>For month</th>
+                        <th>Paid on</th>
+                        <th class="text-end">Amount</th>
+                        <th>Method</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var group in byMonth)
+                    {
+                        var monthTotal = group.Sum(p => p.Amount);
+                        var shortfall = fee - monthTotal;
+
+                        @foreach (var payment in group)
+                        {
+                            <tr>
+                                <td>@payment.ForMonth.ToString("MMMM yyyy")</td>
+                                <td>@payment.PaymentDate.ToString("dd MMM yyyy")</td>
+                                <td class="text-end">@payment.Amount.ToString("0.##")</td>
+                                <td>@payment.PaymentMethod</td>
+                            </tr>
+                        }
+
+                        @if (shortfall > 0 && fee > 0)
+                        {
+                            <tr class="table-warning">
+                                <td colspan="4" class="small">
+                                    @group.Key.ToString("MMMM yyyy"): paid @monthTotal.ToString("0.##")
+                                    of @fee.ToString("0.##") &mdash;
+                                    <strong>@shortfall.ToString("0.##") still due</strong>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+
+    </div>
+</div>

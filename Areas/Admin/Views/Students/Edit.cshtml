@@ -1,0 +1,175 @@
+﻿@model TSC.Models.Student
+
+@{
+    ViewData["Title"] = "Edit Student";
+}
+
+<h1>Edit Student</h1>
+
+<p class="text-muted">
+    Update the student's information.
+</p>
+
+<hr />
+
+<div class="row">
+    <div class="col-lg-7">
+
+        <form asp-action="Edit" method="post">
+
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="All"
+                 class="text-danger mb-3">
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="StudentId" class="form-label">
+                    Student ID
+                </label>
+
+                <input asp-for="StudentId"
+                       class="form-control" />
+
+                <span asp-validation-for="StudentId"
+                      class="text-danger">
+                </span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label">
+                    Full Name
+                </label>
+
+                <input asp-for="FullName"
+                       class="form-control" />
+
+                <span asp-validation-for="FullName"
+                      class="text-danger">
+                </span>
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="ClassLevel"
+                           class="form-label">
+                        Class
+                    </label>
+
+                    <select asp-for="ClassLevel"
+                            class="form-select">
+
+                        <option value="2">Class 2</option>
+                        <option value="3">Class 3</option>
+                        <option value="4">Class 4</option>
+                        <option value="5">Class 5</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="BatchId"
+                           class="form-label">
+                        Batch
+                    </label>
+
+                    <select asp-for="BatchId" class="form-select"
+                            asp-items="@(new SelectList((IEnumerable<TSC.Models.Batch>)ViewBag.Batches, "Id", "Name"))">
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Phone"
+                       class="form-label">
+                    Student Phone
+                </label>
+
+                <input asp-for="Phone"
+                       class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email"
+                       class="form-label">
+                    Email
+                </label>
+
+                <input asp-for="Email"
+                       type="email"
+                       class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DateOfBirth"
+                       class="form-label">
+                    Date of Birth
+                </label>
+
+                <input asp-for="DateOfBirth"
+                       type="date"
+                       class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Address"
+                       class="form-label">
+                    Address
+                </label>
+
+                <textarea asp-for="Address"
+                          class="form-control"
+                          rows="3"></textarea>
+            </div>
+
+            <hr />
+
+            <h5>Guardian Information</h5>
+
+            <div class="mb-3">
+                <label asp-for="GuardianName"
+                       class="form-label">
+                    Guardian Name
+                </label>
+
+                <input asp-for="GuardianName"
+                       class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="GuardianPhone"
+                       class="form-label">
+                    Guardian Phone
+                </label>
+
+                <input asp-for="GuardianPhone"
+                       class="form-control" />
+            </div>
+
+            <div class="mt-4">
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Save Changes
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,74 @@
+﻿@model TSC.Models.Student
+
+@{
+    ViewData["Title"] = "Delete Student";
+}
+
+<h1>Delete Student</h1>
+
+<div class="alert alert-danger">
+    <strong>Warning:</strong>
+    You are about to permanently delete this student.
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+
+        <h4>@Model.FullName</h4>
+
+        <dl class="row mt-3 mb-0">
+
+            <dt class="col-sm-3">
+                Student ID
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.StudentId
+            </dd>
+
+            <dt class="col-sm-3">
+                Class
+            </dt>
+
+            <dd class="col-sm-9">
+                Class @Model.ClassLevel
+            </dd>
+
+            <dt class="col-sm-3">
+                Batch
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.Batch?.Name
+            </dd>
+
+            <dt class="col-sm-3">
+                Guardian
+            </dt>
+
+            <dd class="col-sm-9">
+                @Model.GuardianName
+            </dd>
+
+        </dl>
+
+    </div>
+</div>
+
+<form asp-action="Delete"
+      asp-route-id="@Model.Id"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <button type="submit"
+            class="btn btn-danger">
+        Yes, Delete Student
+    </button>
+
+    <a asp-action="Index"
+       class="btn btn-secondary">
+        Cancel
+    </a>
+
+</form>

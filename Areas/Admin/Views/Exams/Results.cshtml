@@ -1,0 +1,152 @@
+@{
+    var exam = (TSC.Models.Exam)ViewBag.Exam;
+    var students = (IEnumerable<TSC.Models.Student>)ViewBag.Students;
+    var scores = (Dictionary<(int StudentId, int SubjectId), decimal>)ViewBag.Scores;
+    var papers = exam.ExamSubjects.OrderBy(es => es.Subject?.Name).ToList();
+
+    ViewData["Title"] = $"Results — {exam.Name}";
+
+    var totalFullMarks = papers.Sum(p => p.FullMarks);
+
+    // Rank on total obtained; only students with at least one mark are ranked.
+    var rows = students
+        .Select(student => new
+        {
+            Student = student,
+            Marked = papers.Count(p => scores.ContainsKey((student.Id, p.SubjectId))),
+            Obtained = papers.Sum(p => scores.TryGetValue((student.Id, p.SubjectId), out var v) ? v : 0m),
+        })
+        .OrderByDescending(r => r.Marked > 0 ? r.Obtained : -1)
+        .ThenBy(r => r.Student.FullName)
+        .ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>@exam.Name</h1>
+        <p class="text-muted mb-0">
+            @exam.Batch?.Name &middot; @exam.ExamDate.ToString("dd MMM yyyy") &middot;
+            out of @totalFullMarks.ToString("0.##")
+        </p>
+    </div>
+
+    <div>
+        <a asp-action="Details" asp-route-id="@exam.Id" class="btn btn-secondary">Back to papers</a>
+        <button type="button" class="btn btn-outline-secondary" onclick="window.print()">Print</button>
+    </div>
+</div>
+
+@if (!papers.Any())
+{
+    <div class="alert alert-warning">
+        This exam has no papers yet.
+        <a asp-action="Details" asp-route-id="@exam.Id">Add one</a>.
+    </div>
+}
+else if (!students.Any())
+{
+    <div class="alert alert-warning">@exam.Batch?.Name has no students yet.</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 3rem;">#</th>
+                            <th>Student</th>
+
+                            @foreach (var paper in papers)
+                            {
+                                <th class="text-center">
+                                    @paper.Subject?.Name
+                                    <small class="d-block text-muted fw-normal">
+                                        / @paper.FullMarks.ToString("0.##")
+                                    </small>
+                                </th>
+                            }
+
+                            <th class="text-center">Total</th>
+                            <th class="text-center">%</th>
+                            <th class="text-center">Grade</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @{ var rank = 0; }
+
+                        @foreach (var row in rows)
+                        {
+                            var complete = row.Marked == papers.Count;
+                            var percentage = TSC.Models.Grading.Percentage(row.Obtained, totalFullMarks);
+
+                            // Any failed paper fails the exam, however good the total looks.
+                            var failedAPaper = papers.Any(p =>
+                                scores.TryGetValue((row.Student.Id, p.SubjectId), out var v)
+                                && TSC.Models.Grading.Percentage(v, p.FullMarks) < 33);
+
+                            var grade = TSC.Models.Grading.For(percentage);
+
+                            if (failedAPaper)
+                            {
+                                grade = ("F", 0.00m);
+                            }
+
+                            if (row.Marked > 0) { rank++; }
+
+                            <tr>
+                                <td>@(row.Marked > 0 ? rank.ToString() : "—")</td>
+
+                                <td>
+                                    <a asp-controller="Students" asp-action="Details" asp-route-id="@row.Student.Id">
+                                        @row.Student.FullName
+                                    </a>
+                                    <small class="d-block text-muted">@row.Student.StudentId</small>
+                                </td>
+
+                                @foreach (var paper in papers)
+                                {
+                                    var has = scores.TryGetValue((row.Student.Id, paper.SubjectId), out var mark);
+                                    var failed = has && TSC.Models.Grading.Percentage(mark, paper.FullMarks) < 33;
+
+                                    <td class="text-center @(failed ? "text-danger fw-bold" : "")">
+                                        @(has ? mark.ToString("0.##") : "—")
+                                    </td>
+                                }
+
+                                <td class="text-center">
+                                    <strong>@row.Obtained.ToString("0.##")</strong>
+                                </td>
+
+                                <td class="text-center">
+                                    @(row.Marked > 0 ? $"{percentage:0.##}%" : "—")
+                                </td>
+
+                                <td class="text-center">
+                                    @if (row.Marked == 0)
+                                    {
+                                        <span class="text-muted">Not marked</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-@TSC.Models.Grading.Colour(grade.Letter)">
+                                            @grade.Letter
+                                        </span>
+                                        <small class="d-block text-muted">GPA @grade.Point.ToString("0.00")</small>
+
+                                        @if (!complete)
+                                        {
+                                            <small class="d-block text-warning">@row.Marked of @papers.Count marked</small>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,14 @@
+@model IEnumerable<TSC.Models.Notice>
+
+@{
+    ViewData["Title"] = "Notices";
+}
+
+<h1>Notices</h1>
+<hr />
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <partial name="_NoticeBoard" model="Model" />
+    </div>
+</div>

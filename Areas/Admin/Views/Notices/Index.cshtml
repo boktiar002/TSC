@@ -1,0 +1,71 @@
+@model IEnumerable<TSC.Models.Notice>
+
+@{
+    ViewData["Title"] = "Notices";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Notices</h1>
+        <p class="text-muted mb-0">Visible notices appear on every student and teacher dashboard.</p>
+    </div>
+
+    <a asp-action="Create" class="btn btn-primary">+ Publish Notice</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <h5>No notices yet</h5>
+            <p class="text-muted">Publish one to announce exams, holidays or fee deadlines.</p>
+            <a asp-action="Create" class="btn btn-primary">Publish Notice</a>
+        </div>
+    </div>
+}
+else
+{
+    @foreach (var notice in Model)
+    {
+        <div class="card shadow-sm mb-3 @(notice.IsActive ? "" : "opacity-50")">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-1">
+                            @notice.Title
+
+                            @if (!notice.IsActive)
+                            {
+                                <span class="badge bg-secondary">Hidden</span>
+                            }
+                        </h5>
+
+                        <small class="text-muted">
+                            @notice.PublishedAt.ToLocalTime().ToString("dd MMM yyyy, h:mm tt")
+                        </small>
+                    </div>
+
+                    <div class="text-nowrap">
+                        <a asp-action="Edit" asp-route-id="@notice.Id"
+                           class="btn btn-sm btn-outline-secondary">Edit</a>
+
+                        <form asp-action="Toggle" asp-route-id="@notice.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                @(notice.IsActive ? "Hide" : "Show")
+                            </button>
+                        </form>
+
+                        <form asp-action="Delete" asp-route-id="@notice.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Delete this notice permanently?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+
+                <p class="mt-3 mb-0" style="white-space: pre-wrap;">@notice.Content</p>
+
+            </div>
+        </div>
+    }
+}
