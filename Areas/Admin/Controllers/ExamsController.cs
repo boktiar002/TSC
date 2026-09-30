@@ -245,6 +245,93 @@ public class ExamsController : Controller
         return View();
     }
 
+    // GET: /Admin/Exams/Progress?batchId=1&examIds=3&examIds=4
+    // The cumulative sheet the centre prints by hand: every selected paper side by side,
+    // with the total, the average and the merit position worked out.
+    public async Task<IActionResult> Progress(int? batchId, int[]? examIds)
+    {
+        await LoadBatches();
+
+        var batches = (List<Batch>)ViewBag.Batches;
+        batchId ??= batches.FirstOrDefault()?.Id;
+
+        var exams = await _context.Exams
+            .Where(e => e.BatchId == batchId)
+            .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
+            .OrderBy(e => e.ExamDate)
+            .ToListAsync();
+
+        // No boxes ticked means "the whole term", which is what the printed sheet shows.
+        var chosen = examIds is { Length: > 0 }
+            ? exams.Where(e => examIds.Contains(e.Id)).ToList()
+            : exams;
+
+        var columns = Ranking.PapersOf(chosen);
+        var rows = await Ranking.RankAsync(_context, batchId!.Value, chosen, columns);
+        var fullMarks = columns.Sum(c => c.Paper.FullMarks);
+
+        ViewBag.BatchId = batchId;
+        ViewBag.Exams = exams;
+        ViewBag.Chosen = chosen;
+        ViewBag.Columns = columns;
+        ViewBag.FullMarks = fullMarks;
+
+        return View(rows);
+    }
+
+    // GET: /Admin/Exams/ReportCard/5?examIds=3&examIds=4
+    // One student's sheet, laid out to be printed and sent home with them.
+    public async Task<IActionResult> ReportCard(int id, int[]? examIds)
+    {
+        var student = await _context.Students
+            .Include(s => s.Batch)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (student == null)
+            return NotFound();
+
+        var exams = await _context.Exams
+            .Where(e => e.BatchId == student.BatchId)
+            .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
+            .OrderBy(e => e.ExamDate)
+            .ToListAsync();
+
+        var chosen = examIds is { Length: > 0 }
+            ? exams.Where(e => examIds.Contains(e.Id)).ToList()
+            : exams;
+
+        var columns = Ranking.PapersOf(chosen);
+
+        // Ranked against the whole batch, otherwise the merit position means nothing.
+        var ranked = await Ranking.RankAsync(_context, student.BatchId, chosen, columns);
+
+        var attendance = await _context.Attendances
+            .Where(a => a.StudentId == id)
+            .GroupBy(a => a.StudentId)
+            .Select(g => new { Days = g.Count(), Present = g.Count(a => a.IsPresent) })
+            .FirstOrDefaultAsync();
+
+        var thisMonth = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, 1);
+
+        var paid = await _context.Payments
+            .Where(p => p.StudentId == id && p.ForMonth == thisMonth)
+            .SumAsync(p => (decimal?)p.Amount) ?? 0m;
+
+        ViewBag.Student = student;
+        ViewBag.Exams = exams;
+        ViewBag.Chosen = chosen;
+        ViewBag.Columns = columns;
+        ViewBag.Ranked = ranked;
+        ViewBag.ClassSize = ranked.Count;
+        ViewBag.AttendanceDays = attendance?.Days ?? 0;
+        ViewBag.AttendancePresent = attendance?.Present ?? 0;
+        ViewBag.ThisMonth = thisMonth;
+        ViewBag.MonthlyFee = student.Batch?.MonthlyFee ?? 0m;
+        ViewBag.PaidThisMonth = paid;
+
+        return View(ranked.First(r => r.Student.Id == id));
+    }
+
     private async Task<Exam?> LoadExam(int? id) =>
         id == null
             ? null

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<TSC.Models.Attendance>
+@model IEnumerable<TSC.Models.Attendance>
 
 @{
     var student = (TSC.Models.Student)ViewBag.Student;
@@ -15,21 +15,23 @@
         <p class="text-muted mb-0">@student.StudentId &middot; @student.Batch?.Name</p>
     </div>
 
-    <a asp-action="Index" asp-route-batchId="@student.BatchId" class="btn btn-secondary">Back to sheet</a>
+    <a asp-action="Batch" asp-route-id="@student.BatchId" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to batch
+    </a>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-4 mb-3">
-        <div class="card shadow-sm">
+<div class="row g-3 mb-4">
+    <div class="col-4">
+        <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h6 class="text-muted">Attendance rate</h6>
+                <h6 class="text-muted">Attendance</h6>
                 <p class="display-6 mb-0">@rate%</p>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4 mb-3">
-        <div class="card shadow-sm">
+    <div class="col-4">
+        <div class="card shadow-sm h-100">
             <div class="card-body">
                 <h6 class="text-muted">Present</h6>
                 <p class="display-6 mb-0">@presentDays</p>
@@ -37,10 +39,10 @@
         </div>
     </div>
 
-    <div class="col-md-4 mb-3">
-        <div class="card shadow-sm">
+    <div class="col-4">
+        <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h6 class="text-muted">Days recorded</h6>
+                <h6 class="text-muted">Days</h6>
                 <p class="display-6 mb-0">@total</p>
             </div>
         </div>

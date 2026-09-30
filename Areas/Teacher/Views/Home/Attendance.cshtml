@@ -1,0 +1,61 @@
+@model TSC.Models.RollCall?
+
+@{
+    ViewData["Title"] = "Attendance";
+
+    var batches = (List<TSC.Models.Batch>)ViewBag.Batches;
+    var batchId = (int?)ViewBag.BatchId;
+    var date = (DateOnly)ViewBag.Date;
+}
+
+<div class="mb-3">
+    <h1>Roll call</h1>
+    <p class="text-muted mb-0">
+        Everyone starts absent. Call the name, tap the button &mdash; tap again to undo.
+        Each tap saves on its own, so there is nothing to submit at the end.
+    </p>
+</div>
+
+@if (!batches.Any())
+{
+    <div class="alert alert-warning">
+        You are not assigned to any batch yet. The office assigns subjects to teachers from
+        the batch page.
+    </div>
+}
+else
+{
+    <form method="get" class="row g-2 align-items-end mb-3">
+        <div class="col-7 col-sm-4">
+            <label for="batchId" class="form-label">Batch</label>
+            <select id="batchId" name="batchId" class="form-select" onchange="this.form.submit();">
+                @foreach (var b in batches)
+                {
+                    <option value="@b.Id" selected="@(b.Id == batchId)">@b.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-5 col-sm-3">
+            <label for="date" class="form-label">Date</label>
+            <input id="date" name="date" type="date" class="form-control" value="@date.ToString("yyyy-MM-dd")" />
+        </div>
+
+        <div class="col-12 col-sm-2">
+            <button type="submit" class="btn btn-primary w-100">Load</button>
+        </div>
+    </form>
+
+    @if (Model == null)
+    {
+        <div class="alert alert-info">Choose a batch above to take attendance.</div>
+    }
+    else if (!Model.Roster.Any())
+    {
+        <div class="alert alert-warning">This batch has no students yet.</div>
+    }
+    else
+    {
+        <partial name="_RollCall" model="Model" />
+    }
+}

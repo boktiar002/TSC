@@ -1,0 +1,82 @@
+@model IReadOnlyList<TSC.Models.ProgressRow>
+
+@{
+    ViewData["Title"] = "Batch Progress";
+
+    var batches = (List<TSC.Models.Batch>)ViewBag.Batches;
+    var batchId = (int?)ViewBag.BatchId;
+    var exams = ViewBag.Exams as List<TSC.Models.Exam> ?? new List<TSC.Models.Exam>();
+    var chosen = ViewBag.Chosen as List<TSC.Models.Exam> ?? new List<TSC.Models.Exam>();
+    var chosenIds = chosen.Select(e => e.Id).ToHashSet();
+
+    ViewBag.Batch = batches.FirstOrDefault(b => b.Id == batchId);
+    ViewBag.Chosen = chosen;
+    ViewBag.Columns = ViewBag.Columns ?? new List<(TSC.Models.Exam Exam, TSC.Models.ExamSubject Paper)>();
+    ViewBag.FullMarks = ViewBag.FullMarks ?? 0m;
+}
+
+<div class="mb-4">
+    <h1>How my batch is doing</h1>
+    <p class="text-muted mb-0">
+        Every paper side by side with totals, averages and merit position. A paper not sat
+        counts as zero.
+    </p>
+</div>
+
+@if (!batches.Any())
+{
+    <div class="alert alert-warning">You are not assigned to any batch yet.</div>
+}
+else
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label" for="batchId">Batch</label>
+                    <select id="batchId" name="batchId" class="form-select" onchange="this.form.submit();">
+                        @foreach (var b in batches)
+                        {
+                            <option value="@b.Id" selected="@(b.Id == batchId)">@b.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-8">
+                    <label class="form-label">Exams counted</label>
+
+                    @if (!exams.Any())
+                    {
+                        <p class="text-muted mb-0">This batch has no exams yet.</p>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-wrap gap-3">
+                            @foreach (var exam in exams)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="examIds"
+                                           value="@exam.Id" id="exam@(exam.Id)"
+                                           checked="@chosenIds.Contains(exam.Id)" />
+                                    <label class="form-check-label" for="exam@(exam.Id)">
+                                        @exam.Name
+                                        <span class="text-muted">(@exam.ExamDate.ToString("dd MMM"))</span>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel me-1"></i>Apply
+                    </button>
+                    <span class="text-muted small ms-2">Nothing ticked counts every exam.</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <partial name="_ProgressTable" model="Model" />
+}

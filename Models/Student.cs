@@ -34,6 +34,10 @@ public class Student
     [StringLength(20)]
     public string? ClassLevel { get; set; }
 
+    // Students who leave are archived, not deleted: the centre still needs their fee and
+    // mark history. A global query filter keeps them out of every roster automatically.
+    public bool IsActive { get; set; } = true;
+
     [Range(1, int.MaxValue, ErrorMessage = "Please select a batch.")]
     [Display(Name = "Batch")]
     public int BatchId { get; set; }

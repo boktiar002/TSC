@@ -58,6 +58,30 @@ public class TeachersController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    // POST: /Admin/Teachers/ResetLogin/5  -- issue a fresh password for an existing login
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetLogin(int id)
+    {
+        var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id);
+
+        if (teacher?.UserId == null)
+            return NotFound();
+
+        var (user, password, error) = await LoginProvisioning.ResetPasswordAsync(_users, teacher.UserId);
+
+        if (error != null)
+        {
+            TempData["Error"] = error;
+            return RedirectToAction(nameof(Index));
+        }
+
+        TempData["NewLogin"] = $"{user!.Email}|{password}";
+        TempData["Success"] = $"New password issued for {teacher.FullName}.";
+
+        return RedirectToAction(nameof(Index));
+    }
+
     // POST: /Admin/Teachers/RemoveLogin/5
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -178,6 +202,16 @@ public class TeachersController : Controller
             TempData["Error"] = $"{teacher.FullName} is still assigned to a batch. Remove those assignments first.";
         else
         {
+            // Take the login with the record, or an orphaned account is left behind that
+            // can still sign in.
+            if (teacher.UserId != null)
+            {
+                var user = await _users.FindByIdAsync(teacher.UserId);
+
+                if (user != null)
+                    await _users.DeleteAsync(user);
+            }
+
             _context.Teachers.Remove(teacher);
             await _context.SaveChangesAsync();
             TempData["Success"] = "Teacher deleted successfully.";

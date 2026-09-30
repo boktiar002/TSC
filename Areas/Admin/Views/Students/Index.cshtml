@@ -1,23 +1,99 @@
 ﻿@model IEnumerable<TSC.Models.Student>
 
 @{
-    ViewData["Title"] = "Students";
+    var archived = (bool)ViewBag.Archived;
+    var archivedCount = (int)ViewBag.ArchivedCount;
+    var query = (string?)ViewBag.Query;
+    var batchId = (int?)ViewBag.BatchId;
+    var classLevel = (string?)ViewBag.ClassLevel;
+    var batches = (List<TSC.Models.Batch>)ViewBag.Batches;
+    var classLevels = (List<string>)ViewBag.ClassLevels;
+    var filtered = !string.IsNullOrWhiteSpace(query) || batchId > 0 || !string.IsNullOrWhiteSpace(classLevel);
+
+    ViewData["Title"] = archived ? "Archived Students" : "Students";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
-        <h1>Students</h1>
+        <h1>@(archived ? "Archived Students" : "Students")</h1>
         <p class="text-muted mb-0">
-            Manage all students of the coaching center.
+            @(archived
+                ? "Students who have left. Their marks, attendance and payments are kept."
+                : "Manage all students of the coaching center.")
         </p>
     </div>
 
-    <a asp-area="Admin"
-       asp-controller="Students"
-       asp-action="Create"
-       class="btn btn-primary">
-        + Add Student
-    </a>
+    <div>
+        @if (archived)
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back to students</a>
+        }
+        else
+        {
+            @if (archivedCount > 0)
+            {
+                <a asp-action="Index" asp-route-archived="true" class="btn btn-outline-secondary">
+                    <i class="bi bi-archive me-1"></i>Archived (@archivedCount)
+                </a>
+            }
+
+            <a asp-action="Create" class="btn btn-primary ms-2"><i class="bi bi-plus-lg me-1"></i>Add student</a>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            @if (archived)
+            {
+                <input type="hidden" name="archived" value="true" />
+            }
+
+            <div class="col-md-5">
+                <label class="form-label" for="q">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="search" class="form-control" id="q" name="q" value="@query"
+                           placeholder="Name, student ID, phone or guardian" />
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label" for="batchId">Batch</label>
+                <select class="form-select" id="batchId" name="batchId">
+                    <option value="">All batches</option>
+                    @foreach (var b in batches)
+                    {
+                        <option value="@b.Id" selected="@(b.Id == batchId)">@b.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label" for="classLevel">Class</label>
+                <select class="form-select" id="classLevel" name="classLevel">
+                    <option value="">All</option>
+                    @foreach (var c in classLevels)
+                    {
+                        <option value="@c" selected="@(c == classLevel)">Class @c</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Search</button>
+
+                @if (filtered)
+                {
+                    <a asp-action="Index" asp-route-archived="@(archived ? "true" : null)"
+                       class="btn btn-outline-secondary" title="Clear filters">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="card shadow-sm">
@@ -26,18 +102,30 @@
         @if (!Model.Any())
         {
             <div class="text-center py-5">
-                <h5>No students found</h5>
-                <p class="text-muted">
-                    Add your first student to get started.
-                </p>
+                <h5>@(filtered ? "No match" : archived ? "No archived students" : "No students found")</h5>
 
-                <a asp-action="Create" class="btn btn-primary">
-                    Add Student
-                </a>
+                @if (filtered)
+                {
+                    <p class="text-muted">Nothing matches that search. Try a different name, ID or phone number.</p>
+
+                    <a asp-action="Index" asp-route-archived="@(archived ? "true" : null)" class="btn btn-outline-secondary">
+                        Clear filters
+                    </a>
+                }
+                else
+                {
+                    <p class="text-muted">Add your first student to get started.</p>
+
+                    <a asp-action="Create" class="btn btn-primary">Add student</a>
+                }
             </div>
         }
         else
         {
+            <p class="text-muted small mb-2">
+                @Model.Count() student@(Model.Count() == 1 ? "" : "s")@(filtered ? " matching" : "")
+            </p>
+
             <div class="table-responsive">
 
                 <table class="table table-hover align-middle">
@@ -99,11 +187,23 @@
                                             Edit
                                         </a>
 
-                                        <a asp-action="Delete"
-                                           asp-route-id="@student.Id"
-                                           class="btn btn-sm btn-outline-danger">
-                                            Delete
-                                        </a>
+                                        @if (archived)
+                                        {
+                                            <form asp-action="Restore" asp-route-id="@student.Id"
+                                                  method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    Restore
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="Delete"
+                                               asp-route-id="@student.Id"
+                                               class="btn btn-sm btn-outline-danger">
+                                                Remove
+                                            </a>
+                                        }
 
                                     </div>
                                 </td>

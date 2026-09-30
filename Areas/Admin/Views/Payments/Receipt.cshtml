@@ -1,0 +1,102 @@
+@model TSC.Models.Payment
+
+@{
+    ViewData["Title"] = "Fee Receipt";
+
+    var student = Model.Student!;
+    var paidForMonth = (decimal)ViewBag.PaidForMonth;
+    var fee = (decimal)ViewBag.MonthlyFee;
+    var due = Math.Max(0, fee - paidForMonth);
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 no-print">
+    <div>
+        <h1>Fee receipt</h1>
+        <p class="text-muted mb-0">Print it and hand it over — or keep it for the file.</p>
+    </div>
+
+    <div>
+        <a asp-action="Student" asp-route-id="@student.Id" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Payment history
+        </a>
+
+        <button type="button" class="btn btn-primary ms-2" onclick="window.print();">
+            <i class="bi bi-printer me-1"></i>Print
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-sm tsc-sheet">
+    <div class="card-body">
+
+        <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-3">
+            <img src="~/img/tsc-logo.png" alt="TSC" style="width: 4.5rem;" />
+            <div>
+                <h2 class="mb-0">TSC &mdash; Teacher Student Care</h2>
+                <div class="text-muted">Fee receipt</div>
+            </div>
+            <div class="ms-auto text-end">
+                <div class="fw-semibold">No. @Model.Id.ToString("D5")</div>
+                <div class="text-muted small">@Model.PaymentDate.ToString("dd MMM yyyy")</div>
+            </div>
+        </div>
+
+        <dl class="row mb-4">
+            <dt class="col-sm-3">Received from</dt>
+            <dd class="col-sm-9 mb-1">
+                <strong>@student.FullName</strong> (@student.StudentId)
+                @if (!string.IsNullOrWhiteSpace(student.GuardianName))
+                {
+                    <span class="text-muted">&middot; guardian @student.GuardianName</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Class &amp; batch</dt>
+            <dd class="col-sm-9 mb-1">Class @student.ClassLevel &middot; @student.Batch?.Name</dd>
+
+            <dt class="col-sm-3">Fee for</dt>
+            <dd class="col-sm-9 mb-1">@Model.ForMonth.ToString("MMMM yyyy")</dd>
+
+            <dt class="col-sm-3">Method</dt>
+            <dd class="col-sm-9 mb-1">@(string.IsNullOrWhiteSpace(Model.PaymentMethod) ? "—" : Model.PaymentMethod)</dd>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Note))
+            {
+                <dt class="col-sm-3">Note</dt>
+                <dd class="col-sm-9 mb-1">@Model.Note</dd>
+            }
+        </dl>
+
+        <table class="table table-sm mb-4">
+            <tbody>
+                <tr>
+                    <td>Monthly fee for @Model.ForMonth.ToString("MMMM yyyy")</td>
+                    <td class="text-end">@fee.ToString("0.##")</td>
+                </tr>
+                <tr class="fw-semibold">
+                    <td>Received on this receipt</td>
+                    <td class="text-end fs-5">@Model.Amount.ToString("0.##")</td>
+                </tr>
+                <tr>
+                    <td>Total received for the month</td>
+                    <td class="text-end">@paidForMonth.ToString("0.##")</td>
+                </tr>
+                <tr class="@(due > 0 ? "text-danger fw-semibold" : "text-success fw-semibold")">
+                    <td>@(due > 0 ? "Still outstanding" : "Balance")</td>
+                    <td class="text-end">@(due > 0 ? due.ToString("0.##") : "Paid in full")</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="row g-4 mt-4">
+            <div class="col-6 text-muted small align-self-end">
+                Computer generated on @DateTime.Now.ToString("dd MMM yyyy, h:mm tt").
+            </div>
+
+            <div class="col-6 text-center align-self-end">
+                <div class="border-top pt-1 mt-5">Received by</div>
+            </div>
+        </div>
+
+    </div>
+</div>

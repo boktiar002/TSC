@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 if (args.Contains("selftest"))
 {
     GradingSelfTest.Run();
-    return;
+    return 0;
 }
 
 var builder = WebApplication.CreateBuilder(args);
@@ -72,8 +72,43 @@ app.MapControllerRoute(
 
 using (var scope = app.Services.CreateScope())
 {
-    await DbSeeder.SeedAsync(scope.ServiceProvider);
+    // Roles are structural — every environment needs them.
+    await DbSeeder.SeedRolesAsync(scope.ServiceProvider);
+
+    // The default admin account is a published credential. Seeding it outside Development
+    // would hand anyone who has seen this repo a way in, so it is deliberately dev-only.
+    if (app.Environment.IsDevelopment())
+        await DbSeeder.SeedDevelopmentAdminAsync(scope.ServiceProvider);
 }
 
+// `dotnet run -- create-admin <email> <password> [full name]`
+// The only way to make the first admin on a server, now that the default one is dev-only.
+if (args.Length >= 3 && args[0] == "create-admin")
+{
+    using var scope = app.Services.CreateScope();
+
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var email = args[1];
+
+    if (await userManager.FindByEmailAsync(email) != null)
+    {
+        Console.Error.WriteLine($"{email} already exists.");
+        return 1;
+    }
+
+    var name = args.Length > 3 ? string.Join(' ', args[3..]) : email;
+    var failure = await DbSeeder.CreateAdminAsync(userManager, email, args[2], name);
+
+    if (failure != null)
+    {
+        Console.Error.WriteLine(failure);
+        return 1;
+    }
+
+    Console.WriteLine($"Admin created: {email}");
+    return 0;
+}
 
 app.Run();
+
+return 0;

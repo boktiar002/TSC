@@ -127,6 +127,28 @@ public class PaymentsController : Controller
             .ToListAsync());
     }
 
+    // GET: /Admin/Payments/Receipt/5  -- the slip the guardian takes home
+    public async Task<IActionResult> Receipt(int id)
+    {
+        var payment = await _context.Payments
+            .Include(p => p.Student).ThenInclude(s => s!.Batch)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (payment?.Student == null)
+            return NotFound();
+
+        // Everything received for that month, not just this slip, so the balance is honest
+        // even when the fee was handed over in instalments.
+        var paidForMonth = await _context.Payments
+            .Where(p => p.StudentId == payment.StudentId && p.ForMonth == payment.ForMonth)
+            .SumAsync(p => (decimal?)p.Amount) ?? 0m;
+
+        ViewBag.PaidForMonth = paidForMonth;
+        ViewBag.MonthlyFee = payment.Student.Batch?.MonthlyFee ?? 0m;
+
+        return View(payment);
+    }
+
     // POST: /Admin/Payments/Delete/5  -- for a mis-keyed receipt
     [HttpPost]
     [ValidateAntiForgeryToken]

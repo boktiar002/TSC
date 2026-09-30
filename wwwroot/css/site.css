@@ -1,31 +1,495 @@
+/* TSC theme - overrides on top of Bootstrap 5.3. There is no Sass build step
+   here, so component variables are set on the compiled classes. */
+
+:root {
+    --tsc-navy: #12294a;
+    --tsc-navy-700: #1b3a6b;
+    --tsc-brand: #1d4ed8;
+    --tsc-brand-600: #1a45c0;
+    --tsc-brand-700: #163a9f;
+    --tsc-accent: #f5a524;
+    --tsc-ink: #0f172a;
+    --tsc-muted: #5d6b80;
+    --tsc-line: #d9e0ea;
+    /* Three tones, not one: a tinted page, a lighter card, and a shaded strip for headers
+       and table heads. Pure white is reserved for inputs and the logo chip. */
+    --tsc-surface: #e8edf4;
+    --tsc-card: #fdfefe;
+    --tsc-shade: #f1f5fa;
+
+    --bs-primary: var(--tsc-brand);
+    --bs-primary-rgb: 29, 78, 216;
+    --bs-link-color: var(--tsc-brand);
+    --bs-link-color-rgb: 29, 78, 216;
+    --bs-link-hover-color: var(--tsc-brand-700);
+    --bs-body-color: var(--tsc-ink);
+    --bs-secondary-color: var(--tsc-muted);
+    --bs-border-color: var(--tsc-line);
+    --bs-border-radius: .625rem;
+    --bs-body-font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --bs-focus-ring-color: rgba(29, 78, 216, .25);
+}
+
 html {
-  font-size: 14px;
+    font-size: 15px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    html { font-size: 16px; }
 }
 
 body {
-  margin-bottom: 60px;
+    background:
+        radial-gradient(900px 380px at 50% -140px, rgba(29, 78, 216, .07), transparent 70%),
+        var(--tsc-surface);
+    background-attachment: fixed;
+    letter-spacing: -.005em;
 }
 
+h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+    font-weight: 600;
+    letter-spacing: -.02em;
+    color: var(--tsc-navy);
+}
+
+h1, .h1 { font-size: 1.6rem; }
+h2, .h2 { font-size: 1.35rem; }
+.display-6 { font-size: 2rem; font-weight: 650; letter-spacing: -.03em; }
+
+.text-primary { color: var(--tsc-brand) !important; }
+.bg-primary { background-color: var(--tsc-brand) !important; }
+.text-muted { color: var(--tsc-muted) !important; }
+
+/* ---------- Top bar ---------- */
+.tsc-navbar {
+    background: linear-gradient(100deg, var(--tsc-navy) 0%, var(--tsc-navy-700) 100%);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .06), 0 6px 24px rgba(15, 23, 42, .12);
+}
+
+.tsc-navbar .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    color: #fff;
+    font-weight: 650;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+}
+
+/* The logo is black on white, so it sits on a white chip rather than on the navy bar. */
+.tsc-brand-mark {
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: .55rem;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    padding: .2rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .35);
+}
+
+.tsc-brand-mark img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.tsc-hero-logo {
+    background: #fff;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    display: inline-block;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .25);
+}
+
+.tsc-hero-logo img { width: 10rem; max-width: 100%; }
+
+.tsc-brand-sub {
+    display: block;
+    font-size: .625rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .55);
+}
+
+.tsc-navbar .nav-link {
+    color: rgba(255, 255, 255, .78);
+    font-size: .925rem;
+    font-weight: 500;
+    padding: .45rem .75rem;
+    border-radius: .5rem;
+    white-space: nowrap;
+}
+
+.tsc-navbar .nav-link:hover,
+.tsc-navbar .nav-link:focus,
+.tsc-navbar .show > .nav-link {
+    color: #fff;
+    background: rgba(255, 255, 255, .1);
+}
+
+.tsc-navbar .nav-link.active {
+    color: #fff;
+    background: rgba(255, 255, 255, .16);
+    box-shadow: inset 0 -2px 0 var(--tsc-accent);
+}
+
+.tsc-navbar .navbar-toggler {
+    border-color: rgba(255, 255, 255, .25);
+    color: rgba(255, 255, 255, .85);
+}
+
+.tsc-navbar .dropdown-menu {
+    border: 1px solid var(--tsc-line);
+    border-radius: .75rem;
+    padding: .375rem;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, .16);
+}
+
+.dropdown-item {
+    border-radius: .5rem;
+    padding: .45rem .6rem;
+    font-size: .925rem;
+}
+
+.dropdown-item.active, .dropdown-item:active {
+    background: rgba(29, 78, 216, .1);
+    color: var(--tsc-brand-700);
+}
+
+.dropdown-header {
+    font-size: .6875rem;
+    font-weight: 650;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--tsc-muted);
+}
+
+.tsc-avatar {
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, .16);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 650;
+    flex: 0 0 auto;
+}
+
+.tsc-role {
+    font-size: .6875rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--tsc-accent);
+}
+
+/* ---------- Cards ---------- */
+.card {
+    border: 1px solid var(--tsc-line);
+    border-radius: .875rem;
+    background: var(--tsc-card);
+}
+
+.card.shadow-sm {
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 20px rgba(15, 23, 42, .05) !important;
+}
+
+a.card { transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease; }
+
+a.card:hover {
+    border-color: rgba(29, 78, 216, .35);
+    box-shadow: 0 2px 4px rgba(15, 23, 42, .05), 0 12px 28px rgba(15, 23, 42, .09) !important;
+    transform: translateY(-1px);
+}
+
+.card-header {
+    background: var(--tsc-shade);
+    border-bottom: 1px solid var(--tsc-line);
+    padding: .75rem 1rem;
+    font-weight: 600;
+    color: var(--tsc-navy);
+}
+
+.card-body { padding: 1.1rem; }
+
+/* ---------- Tables ---------- */
+.table {
+    --bs-table-border-color: var(--tsc-line);
+    margin-bottom: 0;
+}
+
+.table > thead th {
+    font-size: .7rem;
+    font-weight: 650;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--tsc-muted);
+    background: var(--tsc-shade);
+    border-bottom: 1px solid var(--tsc-line);
+    padding-top: .65rem;
+    padding-bottom: .65rem;
+}
+
+.table > tbody > tr > td { padding-top: .6rem; padding-bottom: .6rem; }
+.table-hover > tbody > tr:hover > * { --bs-table-bg-state: #eaf0f9; }
+
+/* ---------- Buttons & controls ---------- */
+.btn {
+    --bs-btn-font-weight: 550;
+    --bs-btn-border-radius: .5rem;
+    --bs-btn-padding-x: .9rem;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--tsc-brand);
+    --bs-btn-border-color: var(--tsc-brand);
+    --bs-btn-hover-bg: var(--tsc-brand-600);
+    --bs-btn-hover-border-color: var(--tsc-brand-600);
+    --bs-btn-active-bg: var(--tsc-brand-700);
+    --bs-btn-active-border-color: var(--tsc-brand-700);
+    --bs-btn-disabled-bg: var(--tsc-brand);
+    --bs-btn-disabled-border-color: var(--tsc-brand);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .08);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--tsc-brand-700);
+    --bs-btn-border-color: rgba(29, 78, 216, .4);
+    --bs-btn-hover-bg: var(--tsc-brand);
+    --bs-btn-hover-border-color: var(--tsc-brand);
+    --bs-btn-active-bg: var(--tsc-brand-700);
+    --bs-btn-active-border-color: var(--tsc-brand-700);
+}
+
+.form-control, .form-select {
+    background-color: #fff;
+    border-color: #cfd8e5;
+    border-radius: .5rem;
+    padding: .5rem .75rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: rgba(29, 78, 216, .55);
+    box-shadow: 0 0 0 .2rem var(--bs-focus-ring-color);
+}
+
+.form-label { font-weight: 550; font-size: .875rem; color: var(--tsc-navy); }
+
+.btn:focus-visible, .btn-link.nav-link:focus-visible, .form-check-input:focus {
+    box-shadow: 0 0 0 .2rem var(--bs-focus-ring-color);
+}
+
+/* ---------- Alerts & badges ---------- */
+.alert {
+    border: 1px solid transparent;
+    border-radius: .75rem;
+}
+
+.alert-success { background: #edfaf3; border-color: #bfe8d3; color: #14603c; }
+.alert-danger  { background: #fdf0f0; border-color: #f4ccd0; color: #8a1c2b; }
+.alert-warning { background: #fff8e9; border-color: #f6dfae; color: #7a4d06; }
+.alert-info    { background: #eff5ff; border-color: #c9dcfb; color: #16407f; }
+
+.badge { font-weight: 600; padding: .38em .6em; border-radius: .4rem; }
+
+/* ---------- Landing page ---------- */
+.tsc-hero {
+    background:
+        radial-gradient(1100px 420px at 88% -8%, rgba(59, 130, 246, .45), transparent 60%),
+        linear-gradient(130deg, var(--tsc-navy) 0%, var(--tsc-navy-700) 62%, #23508f 100%);
+    color: #fff;
+    border-radius: 1.25rem;
+    padding: 3.25rem 2.25rem;
+}
+
+.tsc-hero h1 { color: #fff; font-size: clamp(1.9rem, 4vw, 2.75rem); }
+.tsc-hero .lead { color: rgba(255, 255, 255, .78); }
+
+.tsc-eyebrow {
+    display: inline-block;
+    font-size: .6875rem;
+    font-weight: 650;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--tsc-accent);
+    margin-bottom: .75rem;
+}
+
+.tsc-feature-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: .65rem;
+    display: grid;
+    place-items: center;
+    background: rgba(29, 78, 216, .1);
+    color: var(--tsc-brand-700);
+    font-size: 1.15rem;
+    margin-bottom: .75rem;
+}
+
+/* ---------- Footer ---------- */
+.tsc-footer {
+    background: var(--tsc-navy);
+    border-top: 1px solid var(--tsc-navy-700);
+    color: rgba(255, 255, 255, .6);
+    font-size: .875rem;
+    padding: 1.15rem 0;
+    margin-top: 2.5rem;
+}
+
+.tsc-footer a { color: rgba(255, 255, 255, .78); text-decoration: none; }
+.tsc-footer a:hover { color: #fff; }
+
+/* Keep the Identity pages' floating labels behaving. */
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+    color: var(--bs-secondary-color);
+    text-align: end;
 }
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+    text-align: start;
+}
+
+/* ---------- Printing ----------
+   Report cards and fee receipts go home with the student, so the on-screen chrome is
+   dropped and the sheet is left to fill the page. */
+.tsc-sheet { background: #fff; }
+
+@media print {
+    .tsc-navbar, .tsc-footer, .no-print, .alert, .btn { display: none !important; }
+
+    body {
+        background: #fff;
+        font-size: 12pt;
+    }
+
+    main { padding: 0 !important; }
+    .container { max-width: none; padding: 0; }
+
+    .card, .tsc-sheet {
+        border: none !important;
+        box-shadow: none !important;
+        background: #fff !important;
+    }
+
+    .card-body { padding: 0; }
+    .table > thead th { background: #fff; color: #000; }
+    .badge { border: 1px solid #999; color: #000 !important; background: #fff !important; }
+
+    a { text-decoration: none; color: #000; }
+}
+
+/* ---------- Roll call ----------
+   Taken one-handed on a phone while calling names, so the tap targets are thumb sized. */
+.tsc-roll-bar {
+    position: sticky;
+    top: 4.25rem;
+    z-index: 5;
+}
+
+.tsc-roll-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .6rem .85rem;
+    background: var(--tsc-card);
+}
+
+.tsc-roll-row.is-present {
+    background: #edfaf3;
+    border-left: 4px solid #1a9e63;
+}
+
+.tsc-roll-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 550;
+    line-height: 1.25;
+}
+
+.tsc-roll-btn {
+    min-width: 7rem;
+    min-height: 2.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+}
+
+.tsc-roll-btn:disabled { opacity: .65; }
+
+@media (max-width: 575.98px) {
+    .tsc-roll-row { padding: .55rem .6rem; }
+    .tsc-roll-btn { min-width: 5.75rem; padding-left: .6rem; padding-right: .6rem; }
+    .tsc-roll-btn span { display: none; }
+    .tsc-roll-btn i { font-size: 1.35rem; }
+}
+
+/* ---------- Small screens ----------
+   The office runs this from a phone: roll call in the classroom, a fee check at the desk,
+   a result looked up while a guardian waits. */
+
+/* Wide tables scroll sideways instead of squashing. Turning the table itself into the
+   scroll box means every table gets this, not only the ones wrapped in .table-responsive. */
+@media (max-width: 991.98px) {
+    .card-body > .table,
+    .card > .table,
+    .table-responsive > .table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table > thead th,
+    .table > tbody > tr > td {
+        padding-left: .5rem;
+        padding-right: .5rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .container { padding-left: .85rem; padding-right: .85rem; }
+
+    main { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+
+    h1, .h1 { font-size: 1.35rem; }
+    h2, .h2 { font-size: 1.2rem; }
+    .display-6 { font-size: 1.6rem; }
+
+    .card-body { padding: .85rem; }
+    .card-header { padding: .6rem .85rem; }
+
+    .table { font-size: .875rem; }
+
+    /* Toolbar buttons in a page header wrap into their own row and stay tappable. */
+    .btn { --bs-btn-padding-y: .45rem; }
+    .btn-sm { --bs-btn-padding-y: .35rem; }
+
+    .tsc-hero { padding: 2rem 1.25rem; border-radius: 1rem; }
+    .tsc-footer { text-align: center; }
+
+    /* iOS zooms the page in when a focused field is under 16px. */
+    .form-control, .form-select { font-size: 16px; }
+
+    /* A long admin menu must not run off the bottom of a phone. */
+    .tsc-navbar .navbar-collapse {
+        max-height: 75vh;
+        overflow-y: auto;
+        margin-top: .5rem;
+    }
+
+    .tsc-roll-bar { top: 3.9rem; }
+}
+
+/* Action buttons stacked in a table cell need air between them once they wrap. */
+.table td > .btn,
+.table td > form {
+    margin-bottom: .15rem;
 }

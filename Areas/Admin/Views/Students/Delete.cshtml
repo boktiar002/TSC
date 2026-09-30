@@ -1,15 +1,12 @@
-﻿@model TSC.Models.Student
+@model TSC.Models.Student
 
 @{
-    ViewData["Title"] = "Delete Student";
+    ViewData["Title"] = "Remove Student";
 }
 
-<h1>Delete Student</h1>
+<h1>Remove @Model.FullName</h1>
 
-<div class="alert alert-danger">
-    <strong>Warning:</strong>
-    You are about to permanently delete this student.
-</div>
+<hr />
 
 <div class="card mb-4">
     <div class="card-body">
@@ -17,58 +14,68 @@
         <h4>@Model.FullName</h4>
 
         <dl class="row mt-3 mb-0">
+            <dt class="col-sm-3">Student ID</dt>
+            <dd class="col-sm-9">@Model.StudentId</dd>
 
-            <dt class="col-sm-3">
-                Student ID
-            </dt>
+            <dt class="col-sm-3">Class</dt>
+            <dd class="col-sm-9">Class @Model.ClassLevel</dd>
 
-            <dd class="col-sm-9">
-                @Model.StudentId
-            </dd>
+            <dt class="col-sm-3">Batch</dt>
+            <dd class="col-sm-9">@Model.Batch?.Name</dd>
 
-            <dt class="col-sm-3">
-                Class
-            </dt>
-
-            <dd class="col-sm-9">
-                Class @Model.ClassLevel
-            </dd>
-
-            <dt class="col-sm-3">
-                Batch
-            </dt>
-
-            <dd class="col-sm-9">
-                @Model.Batch?.Name
-            </dd>
-
-            <dt class="col-sm-3">
-                Guardian
-            </dt>
-
-            <dd class="col-sm-9">
-                @Model.GuardianName
-            </dd>
-
+            <dt class="col-sm-3">Guardian</dt>
+            <dd class="col-sm-9">@Model.GuardianName</dd>
         </dl>
 
     </div>
 </div>
 
-<form asp-action="Delete"
-      asp-route-id="@Model.Id"
-      method="post">
+<div class="row">
 
-    @Html.AntiForgeryToken()
+    <div class="col-md-6 mb-3">
+        <div class="card border-primary h-100">
+            <div class="card-header bg-primary text-white"><strong>Archive</strong></div>
+            <div class="card-body d-flex flex-column">
 
-    <button type="submit"
-            class="btn btn-danger">
-        Yes, Delete Student
-    </button>
+                <p>
+                    Use this when the student has left the centre. They disappear from
+                    rosters, attendance sheets and fee ledgers, but their marks, attendance
+                    and payment history are kept. Their portal login is removed.
+                </p>
 
-    <a asp-action="Index"
-       class="btn btn-secondary">
-        Cancel
-    </a>
+                <p class="text-muted small">You can restore them later.</p>
 
-</form>
+                <form asp-action="Archive" asp-route-id="@Model.Id" method="post" class="mt-auto">
+                    <button type="submit" class="btn btn-primary">Archive @Model.FullName</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card border-danger h-100">
+            <div class="card-header bg-danger text-white"><strong>Delete permanently</strong></div>
+            <div class="card-body d-flex flex-column">
+
+                <p>
+                    Only for a record added by mistake. This cannot be undone.
+                </p>
+
+                <p class="text-muted small">
+                    Blocked if the student has any marks, attendance or payments recorded —
+                    deleting would destroy that history too.
+                </p>
+
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="mt-auto"
+                      onsubmit="return confirm('Permanently delete @Model.FullName? This cannot be undone.');">
+                    <button type="submit" class="btn btn-outline-danger">Delete permanently</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<a asp-action="Index" class="btn btn-secondary">Cancel</a>

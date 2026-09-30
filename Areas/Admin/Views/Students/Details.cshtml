@@ -4,7 +4,7 @@
     ViewData["Title"] = "Student Details";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
 
     <div>
         <h1>@Model.FullName</h1>
@@ -14,6 +14,11 @@
     </div>
 
     <div>
+        <a asp-controller="Exams" asp-action="ReportCard" asp-route-id="@Model.Id"
+           class="btn btn-outline-primary">
+            <i class="bi bi-file-earmark-text me-1"></i>Report card
+        </a>
+
         <a asp-controller="Attendance" asp-action="Student" asp-route-id="@Model.Id"
            class="btn btn-outline-primary">
             Attendance
@@ -159,6 +164,7 @@
     </div>
 
 </div>
+
 <div class="card shadow-sm">
     <div class="card-header"><strong>Portal login</strong></div>
     <div class="card-body">
@@ -170,8 +176,15 @@
                 <span class="text-muted ms-2">@Model.Email</span>
             </p>
 
-            <form asp-action="RemoveLogin" asp-route-id="@Model.Id" method="post"
-                  onsubmit="return confirm('Remove @Model.FullName\u0027s login? They will lose access to the portal.');">
+            <form asp-action="ResetLogin" asp-route-id="@Model.Id" method="post" class="d-inline"
+                  onsubmit="return confirm('Issue a new password? The old one stops working.');">
+                <button type="submit" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-key"></i> New password
+                </button>
+            </form>
+
+            <form asp-action="RemoveLogin" asp-route-id="@Model.Id" method="post" class="d-inline"
+                  onsubmit="return confirm('Remove @Model.FullName's login? They will lose access to the portal.');">
                 <button type="submit" class="btn btn-sm btn-outline-danger">Remove login</button>
             </form>
         }

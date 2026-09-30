@@ -1,8 +1,92 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Home";
+
+    var portals = new (string Icon, string Title, string Text, string Area, string Controller, string Action, bool Visible)[]
+    {
+        ("bi-speedometer2", "Office", "Admissions, batches, fees and results.", "Admin", "Dashboard", "Index", User.IsInRole("Admin")),
+        ("bi-person-workspace", "Teachers", "Your batches, attendance and marks entry.", "Teacher", "Home", "Index", User.IsInRole("Teacher")),
+        ("bi-mortarboard", "Students", "Results, attendance, fees and notices.", "Student", "Home", "Index", User.IsInRole("Student")),
+    };
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="tsc-hero mb-4">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+            <span class="tsc-eyebrow">Coaching centre management</span>
+            <h1 class="mb-3">One place to run the centre, not six notebooks.</h1>
+            <p class="lead mb-4">
+                Admissions, batches, attendance, exam results, fee collection and notices &mdash;
+                for the office, the teachers and every student.
+            </p>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                var first = portals.FirstOrDefault(p => p.Visible);
+
+                if (first.Title != null)
+                {
+                    <a class="btn btn-light btn-lg px-4 fw-semibold text-primary"
+                       asp-area="@first.Area" asp-controller="@first.Controller" asp-action="@first.Action">
+                        Go to my dashboard <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                }
+            }
+            else
+            {
+                <a class="btn btn-light btn-lg px-4 fw-semibold text-primary" asp-area="Identity" asp-page="/Account/Login">
+                    Sign in <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+                <span class="ms-3 small text-white-50">Accounts are issued by the office.</span>
+            }
+        </div>
+        <div class="col-lg-4 d-none d-lg-block text-center">
+            <span class="tsc-hero-logo">
+                <img src="~/img/tsc-logo.png" alt="TSC — Teacher Student Care" />
+            </span>
+        </div>
+    </div>
 </div>
+
+@if (portals.Any(p => p.Visible))
+{
+    <div class="row g-3 mb-2">
+        @foreach (var portal in portals.Where(p => p.Visible))
+        {
+            <div class="col-md-4">
+                <a class="card shadow-sm h-100 text-decoration-none text-body"
+                   asp-area="@portal.Area" asp-controller="@portal.Controller" asp-action="@portal.Action">
+                    <div class="card-body">
+                        <div class="tsc-feature-icon"><i class="bi @portal.Icon"></i></div>
+                        <h5 class="mb-1">@portal.Title</h5>
+                        <p class="text-muted small mb-0">@portal.Text</p>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-2">
+        @foreach (var feature in new (string Icon, string Title, string Text)[]
+        {
+            ("bi-collection", "Batches & subjects", "Group students by class and batch, assign teachers to the subjects they actually teach."),
+            ("bi-calendar2-check", "Attendance", "Daily roll call per batch, with a running attendance rate for every student."),
+            ("bi-clipboard-check", "Exams & results", "Enter marks once, publish grades to students and guardians instantly."),
+            ("bi-cash-coin", "Fee collection", "Monthly dues, payments received and what is still outstanding at a glance."),
+            ("bi-megaphone", "Notices", "One notice board that reaches the right batches without a single phone call."),
+            ("bi-shield-lock", "Role-based access", "Office, teachers and students each see only what belongs to them."),
+        })
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="tsc-feature-icon"><i class="bi @feature.Icon"></i></div>
+                        <h6 class="mb-1">@feature.Title</h6>
+                        <p class="text-muted small mb-0">@feature.Text</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

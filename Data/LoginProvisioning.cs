@@ -76,5 +76,26 @@ public static class LoginProvisioning
         return (user, password, null);
     }
 
+    // The password is shown once, so a lost or mis-typed one cannot be looked up. Re-issue
+    // instead of deleting the account and starting over, which would drop the person's link
+    // to their marks, attendance and fees.
+    public static async Task<(ApplicationUser? User, string? Password, string? Error)> ResetPasswordAsync(
+        UserManager<ApplicationUser> users, string userId)
+    {
+        var user = await users.FindByIdAsync(userId);
+
+        if (user == null)
+            return (null, null, "That login no longer exists.");
+
+        var password = GeneratePassword();
+        var token = await users.GeneratePasswordResetTokenAsync(user);
+        var reset = await users.ResetPasswordAsync(user, token, password);
+
+        if (!reset.Succeeded)
+            return (null, null, string.Join(" ", reset.Errors.Select(e => e.Description)));
+
+        return (user, password, null);
+    }
+
     private static char Pick(string set) => set[RandomNumberGenerator.GetInt32(set.Length)];
 }

@@ -44,5 +44,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // so unlinked records are unaffected.
         builder.Entity<Student>().HasIndex(s => s.UserId).IsUnique();
         builder.Entity<Teacher>().HasIndex(t => t.UserId).IsUnique();
+
+        // Archived students disappear from every query in the app. Use IgnoreQueryFilters()
+        // where an archived student still matters -- the archive list, and the duplicate
+        // StudentId check, which must still see IDs held by archived records.
+        builder.Entity<Student>().Property(s => s.IsActive).HasDefaultValue(true);
+        builder.Entity<Student>().HasQueryFilter(s => s.IsActive);
+
+        // Matching filters on the dependents. Without these EF warns, and worse, a mark or
+        // payment belonging to an archived student would still be returned with a null
+        // Student navigation. The rows stay in the database -- IgnoreQueryFilters() reads
+        // them back if an archive report ever needs the history.
+        builder.Entity<Mark>().HasQueryFilter(m => m.Student!.IsActive);
+        builder.Entity<Attendance>().HasQueryFilter(a => a.Student!.IsActive);
+        builder.Entity<Payment>().HasQueryFilter(p => p.Student!.IsActive);
     }
 }

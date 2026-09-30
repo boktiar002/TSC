@@ -1,0 +1,177 @@
+@model IReadOnlyList<TSC.Models.ProgressRow>
+
+@*
+    The merit sheet, shared by the office (/Admin/Exams/Progress) and the teacher looking at
+    their own batch (/Teacher/Home/Progress). Report cards are the office's to issue, so that
+    column only appears for an admin.
+*@
+
+@{
+    var chosen = (List<Exam>)ViewBag.Chosen;
+    var columns = (List<(Exam Exam, ExamSubject Paper)>)ViewBag.Columns;
+    var fullMarks = (decimal)ViewBag.FullMarks;
+    var batch = (Batch?)ViewBag.Batch;
+
+    var sat = Model.Count(r => r.PapersSat > 0);
+
+    // A subject row is only worth showing when some exam actually has more than one paper.
+    var showSubjects = chosen.Any(e => e.ExamSubjects.Count > 1);
+    var canIssueCards = User.IsInRole("Admin");
+
+    // The report card has to be for the same papers as the sheet you are looking at.
+    var examQuery = string.Join("&", chosen.Select(e => $"examIds={e.Id}"));
+
+    string Place(int rank) => rank switch
+    {
+        1 => "1st",
+        2 => "2nd",
+        3 => "3rd",
+        _ => $"{rank}th"
+    };
+}
+
+@if (!Model.Any() || !chosen.Any())
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <h5>Nothing to rank yet</h5>
+            <p class="text-muted mb-0">
+                @(batch == null ? "Pick a batch first." : $"{batch.Name} needs students and at least one exam.")
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <strong>
+                @batch?.Name &middot;
+                @chosen.Count exam@(chosen.Count == 1 ? "" : "s"),
+                @columns.Count paper@(columns.Count == 1 ? "" : "s") &middot;
+                out of @fullMarks.ToString("0.##")
+            </strong>
+            <span class="text-muted small">@sat of @Model.Count students have a mark</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    @if (showSubjects)
+                    {
+                        <tr>
+                            <th rowspan="2" style="width: 5rem;">Place</th>
+                            <th rowspan="2">Student</th>
+
+                            @foreach (var exam in chosen)
+                            {
+                                <th class="text-center border-start" colspan="@exam.ExamSubjects.Count">
+                                    @exam.Name
+                                    <div class="fw-normal text-muted">@exam.ExamDate.ToString("dd.MM.yy")</div>
+                                </th>
+                            }
+
+                            <th rowspan="2" class="text-end border-start">Total</th>
+                            <th rowspan="2" class="text-end">Average</th>
+                            <th rowspan="2" class="text-end">Papers sat</th>
+
+                            @if (canIssueCards)
+                            {
+                                <th rowspan="2"></th>
+                            }
+                        </tr>
+                        <tr>
+                            @foreach (var column in columns)
+                            {
+                                <th class="text-end @(column.Paper == column.Exam.ExamSubjects.OrderBy(es => es.Id).First() ? "border-start" : "")">
+                                    @column.Paper.Subject?.Name
+                                    <div class="fw-normal text-muted">@column.Paper.FullMarks.ToString("0.##")</div>
+                                </th>
+                            }
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <th style="width: 5rem;">Place</th>
+                            <th>Student</th>
+
+                            @foreach (var column in columns)
+                            {
+                                <th class="text-end">
+                                    @column.Exam.ExamDate.ToString("dd.MM.yy")
+                                    <div class="fw-normal text-muted">@column.Paper.FullMarks.ToString("0.##")</div>
+                                </th>
+                            }
+
+                            <th class="text-end">Total</th>
+                            <th class="text-end">Average</th>
+                            <th class="text-end">Papers sat</th>
+
+                            @if (canIssueCards)
+                            {
+                                <th></th>
+                            }
+                        </tr>
+                    }
+                </thead>
+                <tbody>
+                    @foreach (var row in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (row.Total > 0 && row.Rank <= 3)
+                                {
+                                    <span class="badge bg-primary">@Place(row.Rank)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">@Place(row.Rank)</span>
+                                }
+                            </td>
+
+                            <td>
+                                @row.Student.FullName
+                                <div class="text-muted small">@row.Student.StudentId</div>
+                            </td>
+
+                            @for (var i = 0; i < row.Scores.Length; i++)
+                            {
+                                var score = row.Scores[i];
+                                var startsExam = showSubjects
+                                    && columns[i].Paper == columns[i].Exam.ExamSubjects.OrderBy(es => es.Id).First();
+
+                                <td class="text-end @(startsExam ? "border-start" : "")">
+                                    @if (score == null)
+                                    {
+                                        <span class="text-muted" title="Did not sit — counted as zero">&ndash;</span>
+                                    }
+                                    else
+                                    {
+                                        @score.Value.ToString("0.##")
+                                    }
+                                </td>
+                            }
+
+                            <td class="text-end fw-semibold @(showSubjects ? "border-start" : "")">@row.Total.ToString("0.##")</td>
+                            <td class="text-end">@row.AveragePercent.ToString("0.#")%</td>
+                            <td class="text-end @(row.PapersSat < columns.Count ? "text-danger" : "text-muted")">
+                                @row.PapersSat / @columns.Count
+                            </td>
+
+                            @if (canIssueCards)
+                            {
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-secondary" title="Report card"
+                                       href="@Url.Action("ReportCard", "Exams", new { area = "Admin", id = row.Student.Id })?@examQuery">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </a>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
