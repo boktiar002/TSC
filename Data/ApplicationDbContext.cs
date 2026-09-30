@@ -32,6 +32,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<SchoolClass>().HasIndex(b => b.Name).IsUnique();
         builder.Entity<ClassSubject>().HasIndex(bs => new { bs.SchoolClassId, bs.SubjectId }).IsUnique();
 
+        // Two classes on the same level would generate colliding Student IDs.
+        builder.Entity<SchoolClass>().HasIndex(c => c.Level).IsUnique();
+
         // One row per student per day: taking attendance twice updates, never duplicates.
         builder.Entity<Attendance>().HasIndex(a => new { a.StudentId, a.Date }).IsUnique();
 
