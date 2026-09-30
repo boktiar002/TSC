@@ -72,13 +72,13 @@
 
                 <div class="col-md-6 mb-3">
 
-                    <label asp-for="BatchId"
+                    <label asp-for="SchoolClassId"
                            class="form-label">
-                        Batch
+                        Class
                     </label>
 
-                    <select asp-for="BatchId" class="form-select"
-                            asp-items="@(new SelectList((IEnumerable<TSC.Models.Batch>)ViewBag.Batches, "Id", "Name"))">
+                    <select asp-for="SchoolClassId" class="form-select"
+                            asp-items="@(new SelectList((IEnumerable<TSC.Models.SchoolClass>)ViewBag.SchoolClasses, "Id", "Name"))">
                     </select>
 
                 </div>

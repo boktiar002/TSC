@@ -21,7 +21,7 @@ public class ExamsController : Controller
     public async Task<IActionResult> Index()
     {
         var exams = await _context.Exams
-            .Include(e => e.Batch)
+            .Include(e => e.SchoolClass)
             .Include(e => e.ExamSubjects)
             .Include(e => e.Marks)
             .OrderByDescending(e => e.ExamDate)
@@ -34,7 +34,7 @@ public class ExamsController : Controller
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        await LoadBatches();
+        await LoadSchoolClasses();
 
         return View(new Exam { ExamDate = DateOnly.FromDateTime(DateTime.Today) });
     }
@@ -44,12 +44,12 @@ public class ExamsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Exam exam)
     {
-        if (await _context.Exams.AnyAsync(e => e.Name == exam.Name && e.BatchId == exam.BatchId))
-            ModelState.AddModelError(nameof(exam.Name), "That batch already has an exam with this name.");
+        if (await _context.Exams.AnyAsync(e => e.Name == exam.Name && e.SchoolClassId == exam.SchoolClassId))
+            ModelState.AddModelError(nameof(exam.Name), "That class already has an exam with this name.");
 
         if (!ModelState.IsValid)
         {
-            await LoadBatches();
+            await LoadSchoolClasses();
             return View(exam);
         }
 
@@ -69,16 +69,16 @@ public class ExamsController : Controller
         if (exam == null)
             return NotFound();
 
-        // Only the subjects actually taught to this batch, minus the ones already on the paper.
+        // Only the subjects actually taught to this class, minus the ones already on the paper.
         var onPaper = exam.ExamSubjects.Select(es => es.SubjectId).ToList();
 
-        ViewBag.AvailableSubjects = await _context.BatchSubjects
-            .Where(bs => bs.BatchId == exam.BatchId && !onPaper.Contains(bs.SubjectId))
+        ViewBag.AvailableSubjects = await _context.ClassSubjects
+            .Where(bs => bs.SchoolClassId == exam.SchoolClassId && !onPaper.Contains(bs.SubjectId))
             .Select(bs => bs.Subject!)
             .OrderBy(s => s.Name)
             .ToListAsync();
 
-        ViewBag.StudentCount = await _context.Students.CountAsync(s => s.BatchId == exam.BatchId);
+        ViewBag.StudentCount = await _context.Students.CountAsync(s => s.SchoolClassId == exam.SchoolClassId);
 
         return View(exam);
     }
@@ -95,8 +95,8 @@ public class ExamsController : Controller
 
         if (fullMarks <= 0)
             TempData["Error"] = "Full marks must be greater than zero.";
-        else if (!await _context.BatchSubjects.AnyAsync(bs => bs.BatchId == exam.BatchId && bs.SubjectId == subjectId))
-            TempData["Error"] = "That subject is not taught to this batch.";
+        else if (!await _context.ClassSubjects.AnyAsync(bs => bs.SchoolClassId == exam.SchoolClassId && bs.SubjectId == subjectId))
+            TempData["Error"] = "That subject is not taught to this class.";
         else if (await _context.ExamSubjects.AnyAsync(es => es.ExamId == id && es.SubjectId == subjectId))
             TempData["Error"] = "That subject is already on this exam.";
         else
@@ -183,7 +183,7 @@ public class ExamsController : Controller
             return NotFound();
 
         var roster = await _context.Students
-            .Where(s => s.BatchId == exam.BatchId)
+            .Where(s => s.SchoolClassId == exam.SchoolClassId)
             .OrderBy(s => s.FullName)
             .ToListAsync();
 
@@ -233,7 +233,7 @@ public class ExamsController : Controller
         ViewBag.Exam = exam;
 
         ViewBag.Students = await _context.Students
-            .Where(s => s.BatchId == exam.BatchId)
+            .Where(s => s.SchoolClassId == exam.SchoolClassId)
             .OrderBy(s => s.FullName)
             .ToListAsync();
 
@@ -245,18 +245,18 @@ public class ExamsController : Controller
         return View();
     }
 
-    // GET: /Admin/Exams/Progress?batchId=1&examIds=3&examIds=4
+    // GET: /Admin/Exams/Progress?schoolClassId=1&examIds=3&examIds=4
     // The cumulative sheet the centre prints by hand: every selected paper side by side,
     // with the total, the average and the merit position worked out.
-    public async Task<IActionResult> Progress(int? batchId, int[]? examIds)
+    public async Task<IActionResult> Progress(int? schoolClassId, int[]? examIds)
     {
-        await LoadBatches();
+        await LoadSchoolClasses();
 
-        var batches = (List<Batch>)ViewBag.Batches;
-        batchId ??= batches.FirstOrDefault()?.Id;
+        var schoolClasses = (List<SchoolClass>)ViewBag.SchoolClasses;
+        schoolClassId ??= schoolClasses.FirstOrDefault()?.Id;
 
         var exams = await _context.Exams
-            .Where(e => e.BatchId == batchId)
+            .Where(e => e.SchoolClassId == schoolClassId)
             .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
             .OrderBy(e => e.ExamDate)
             .ToListAsync();
@@ -267,10 +267,10 @@ public class ExamsController : Controller
             : exams;
 
         var columns = Ranking.PapersOf(chosen);
-        var rows = await Ranking.RankAsync(_context, batchId!.Value, chosen, columns);
+        var rows = await Ranking.RankAsync(_context, schoolClassId!.Value, chosen, columns);
         var fullMarks = columns.Sum(c => c.Paper.FullMarks);
 
-        ViewBag.BatchId = batchId;
+        ViewBag.SchoolClassId = schoolClassId;
         ViewBag.Exams = exams;
         ViewBag.Chosen = chosen;
         ViewBag.Columns = columns;
@@ -284,14 +284,14 @@ public class ExamsController : Controller
     public async Task<IActionResult> ReportCard(int id, int[]? examIds)
     {
         var student = await _context.Students
-            .Include(s => s.Batch)
+            .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
             return NotFound();
 
         var exams = await _context.Exams
-            .Where(e => e.BatchId == student.BatchId)
+            .Where(e => e.SchoolClassId == student.SchoolClassId)
             .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
             .OrderBy(e => e.ExamDate)
             .ToListAsync();
@@ -302,8 +302,8 @@ public class ExamsController : Controller
 
         var columns = Ranking.PapersOf(chosen);
 
-        // Ranked against the whole batch, otherwise the merit position means nothing.
-        var ranked = await Ranking.RankAsync(_context, student.BatchId, chosen, columns);
+        // Ranked against the whole class, otherwise the merit position means nothing.
+        var ranked = await Ranking.RankAsync(_context, student.SchoolClassId, chosen, columns);
 
         var attendance = await _context.Attendances
             .Where(a => a.StudentId == id)
@@ -326,7 +326,7 @@ public class ExamsController : Controller
         ViewBag.AttendanceDays = attendance?.Days ?? 0;
         ViewBag.AttendancePresent = attendance?.Present ?? 0;
         ViewBag.ThisMonth = thisMonth;
-        ViewBag.MonthlyFee = student.Batch?.MonthlyFee ?? 0m;
+        ViewBag.MonthlyFee = student.SchoolClass?.MonthlyFee ?? 0m;
         ViewBag.PaidThisMonth = paid;
 
         return View(ranked.First(r => r.Student.Id == id));
@@ -336,10 +336,10 @@ public class ExamsController : Controller
         id == null
             ? null
             : await _context.Exams
-                .Include(e => e.Batch)
+                .Include(e => e.SchoolClass)
                 .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
-    private async Task LoadBatches() =>
-        ViewBag.Batches = await _context.Batches.OrderBy(b => b.Name).ToListAsync();
+    private async Task LoadSchoolClasses() =>
+        ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();
 }

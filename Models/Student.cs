@@ -38,10 +38,10 @@ public class Student
     // mark history. A global query filter keeps them out of every roster automatically.
     public bool IsActive { get; set; } = true;
 
-    [Range(1, int.MaxValue, ErrorMessage = "Please select a batch.")]
-    [Display(Name = "Batch")]
-    public int BatchId { get; set; }
-    public Batch? Batch { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Please select a class.")]
+    [Display(Name = "Class")]
+    public int SchoolClassId { get; set; }
+    public SchoolClass? SchoolClass { get; set; }
 
     public string? UserId { get; set; }
 }

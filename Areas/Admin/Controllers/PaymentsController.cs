@@ -20,36 +20,36 @@ public class PaymentsController : Controller
         _context = context;
     }
 
-    // GET: /Admin/Payments?batchId=1&month=2026-09  -- who owes what this month
-    public async Task<IActionResult> Index(int? batchId, string? month)
+    // GET: /Admin/Payments?schoolClassId=1&month=2026-09  -- who owes what this month
+    public async Task<IActionResult> Index(int? schoolClassId, string? month)
     {
         var forMonth = ParseMonth(month);
 
-        ViewBag.Batches = await _context.Batches.OrderBy(b => b.Name).ToListAsync();
-        ViewBag.BatchId = batchId;
+        ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();
+        ViewBag.SchoolClassId = schoolClassId;
         ViewBag.Month = forMonth;
 
-        if (batchId == null)
+        if (schoolClassId == null)
             return View(new List<Student>());
 
-        var batch = await _context.Batches.FirstOrDefaultAsync(b => b.Id == batchId);
+        var schoolClass = await _context.SchoolClasses.FirstOrDefaultAsync(b => b.Id == schoolClassId);
 
-        if (batch == null)
+        if (schoolClass == null)
             return NotFound();
 
         var roster = await _context.Students
-            .Where(s => s.BatchId == batchId)
+            .Where(s => s.SchoolClassId == schoolClassId)
             .OrderBy(s => s.FullName)
             .ToListAsync();
 
         // Partial payments are normal, so sum rather than take the first row.
         ViewBag.PaidByStudent = await _context.Payments
-            .Where(p => p.ForMonth == forMonth && p.Student!.BatchId == batchId)
+            .Where(p => p.ForMonth == forMonth && p.Student!.SchoolClassId == schoolClassId)
             .GroupBy(p => p.StudentId)
             .Select(g => new { StudentId = g.Key, Paid = g.Sum(p => p.Amount) })
             .ToDictionaryAsync(x => x.StudentId, x => x.Paid);
 
-        ViewBag.Batch = batch;
+        ViewBag.SchoolClass = schoolClass;
 
         return View(roster);
     }
@@ -103,7 +103,7 @@ public class PaymentsController : Controller
 
         return RedirectToAction(nameof(Index), new
         {
-            batchId = student.BatchId,
+            schoolClassId = student.SchoolClassId,
             month = payment.ForMonth.ToString("yyyy-MM")
         });
     }
@@ -112,7 +112,7 @@ public class PaymentsController : Controller
     public async Task<IActionResult> Student(int id)
     {
         var student = await _context.Students
-            .Include(s => s.Batch)
+            .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
@@ -131,7 +131,7 @@ public class PaymentsController : Controller
     public async Task<IActionResult> Receipt(int id)
     {
         var payment = await _context.Payments
-            .Include(p => p.Student).ThenInclude(s => s!.Batch)
+            .Include(p => p.Student).ThenInclude(s => s!.SchoolClass)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (payment?.Student == null)
@@ -144,7 +144,7 @@ public class PaymentsController : Controller
             .SumAsync(p => (decimal?)p.Amount) ?? 0m;
 
         ViewBag.PaidForMonth = paidForMonth;
-        ViewBag.MonthlyFee = payment.Student.Batch?.MonthlyFee ?? 0m;
+        ViewBag.MonthlyFee = payment.Student.SchoolClass?.MonthlyFee ?? 0m;
 
         return View(payment);
     }
@@ -171,7 +171,7 @@ public class PaymentsController : Controller
     {
         var fee = await _context.Students
             .Where(s => s.Id == studentId)
-            .Select(s => s.Batch!.MonthlyFee)
+            .Select(s => s.SchoolClass!.MonthlyFee)
             .FirstOrDefaultAsync();
 
         var paid = await _context.Payments
@@ -186,7 +186,7 @@ public class PaymentsController : Controller
         ViewBag.Methods = Methods;
 
         ViewBag.Students = await _context.Students
-            .Include(s => s.Batch)
+            .Include(s => s.SchoolClass)
             .OrderBy(s => s.FullName)
             .ToListAsync();
     }

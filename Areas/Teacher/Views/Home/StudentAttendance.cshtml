@@ -12,11 +12,11 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
         <h1>@student.FullName</h1>
-        <p class="text-muted mb-0">@student.StudentId &middot; @student.Batch?.Name</p>
+        <p class="text-muted mb-0">@student.StudentId &middot; @student.SchoolClass?.Name</p>
     </div>
 
-    <a asp-action="Batch" asp-route-id="@student.BatchId" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Back to batch
+    <a asp-action="Class" asp-route-id="@student.SchoolClassId" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to class
     </a>
 </div>
 

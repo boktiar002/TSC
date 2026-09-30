@@ -4,7 +4,7 @@
     var student = (TSC.Models.Student)ViewBag.Student;
     ViewData["Title"] = $"Payments — {student.FullName}";
 
-    var fee = student.Batch?.MonthlyFee ?? 0m;
+    var fee = student.SchoolClass?.MonthlyFee ?? 0m;
     var byMonth = Model.GroupBy(p => p.ForMonth).OrderByDescending(g => g.Key).ToList();
 }
 
@@ -12,7 +12,7 @@
     <div>
         <h1>@student.FullName</h1>
         <p class="text-muted mb-0">
-            @student.StudentId &middot; @student.Batch?.Name &middot; fee @fee.ToString("0.##") / month
+            @student.StudentId &middot; @student.SchoolClass?.Name &middot; fee @fee.ToString("0.##") / month
         </p>
     </div>
 
@@ -21,7 +21,7 @@
             Record Payment
         </a>
 
-        <a asp-action="Index" asp-route-batchId="@student.BatchId" class="btn btn-secondary">
+        <a asp-action="Index" asp-route-schoolClassId="@student.SchoolClassId" class="btn btn-secondary">
             Back to fees
         </a>
     </div>

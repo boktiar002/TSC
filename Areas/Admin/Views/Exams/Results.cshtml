@@ -25,7 +25,7 @@
     <div>
         <h1>@exam.Name</h1>
         <p class="text-muted mb-0">
-            @exam.Batch?.Name &middot; @exam.ExamDate.ToString("dd MMM yyyy") &middot;
+            @exam.SchoolClass?.Name &middot; @exam.ExamDate.ToString("dd MMM yyyy") &middot;
             out of @totalFullMarks.ToString("0.##")
         </p>
     </div>
@@ -45,7 +45,7 @@
 }
 else if (!students.Any())
 {
-    <div class="alert alert-warning">@exam.Batch?.Name has no students yet.</div>
+    <div class="alert alert-warning">@exam.SchoolClass?.Name has no students yet.</div>
 }
 else
 {

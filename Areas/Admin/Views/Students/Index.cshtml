@@ -4,11 +4,11 @@
     var archived = (bool)ViewBag.Archived;
     var archivedCount = (int)ViewBag.ArchivedCount;
     var query = (string?)ViewBag.Query;
-    var batchId = (int?)ViewBag.BatchId;
+    var schoolClassId = (int?)ViewBag.SchoolClassId;
     var classLevel = (string?)ViewBag.ClassLevel;
-    var batches = (List<TSC.Models.Batch>)ViewBag.Batches;
+    var schoolClasses = (List<TSC.Models.SchoolClass>)ViewBag.SchoolClasses;
     var classLevels = (List<string>)ViewBag.ClassLevels;
-    var filtered = !string.IsNullOrWhiteSpace(query) || batchId > 0 || !string.IsNullOrWhiteSpace(classLevel);
+    var filtered = !string.IsNullOrWhiteSpace(query) || schoolClassId > 0 || !string.IsNullOrWhiteSpace(classLevel);
 
     ViewData["Title"] = archived ? "Archived Students" : "Students";
 }
@@ -60,12 +60,12 @@
             </div>
 
             <div class="col-md-3">
-                <label class="form-label" for="batchId">Batch</label>
-                <select class="form-select" id="batchId" name="batchId">
-                    <option value="">All batches</option>
-                    @foreach (var b in batches)
+                <label class="form-label" for="schoolClassId">Class</label>
+                <select class="form-select" id="schoolClassId" name="schoolClassId">
+                    <option value="">All classes</option>
+                    @foreach (var b in schoolClasses)
                     {
-                        <option value="@b.Id" selected="@(b.Id == batchId)">@b.Name</option>
+                        <option value="@b.Id" selected="@(b.Id == schoolClassId)">@b.Name</option>
                     }
                 </select>
             </div>
@@ -135,7 +135,7 @@
                             <th>Student ID</th>
                             <th>Name</th>
                             <th>Class</th>
-                            <th>Batch</th>
+                            <th>Class</th>
                             <th>Guardian</th>
                             <th>Phone</th>
                             <th>Actions</th>
@@ -161,7 +161,7 @@
                                 </td>
 
                                 <td>
-                                    @student.Batch?.Name
+                                    @student.SchoolClass?.Name
                                 </td>
 
                                 <td>

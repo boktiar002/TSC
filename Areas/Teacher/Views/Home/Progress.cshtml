@@ -1,31 +1,31 @@
 @model IReadOnlyList<TSC.Models.ProgressRow>
 
 @{
-    ViewData["Title"] = "Batch Progress";
+    ViewData["Title"] = "Class Progress";
 
-    var batches = (List<TSC.Models.Batch>)ViewBag.Batches;
-    var batchId = (int?)ViewBag.BatchId;
+    var schoolClasses = (List<TSC.Models.SchoolClass>)ViewBag.SchoolClasses;
+    var schoolClassId = (int?)ViewBag.SchoolClassId;
     var exams = ViewBag.Exams as List<TSC.Models.Exam> ?? new List<TSC.Models.Exam>();
     var chosen = ViewBag.Chosen as List<TSC.Models.Exam> ?? new List<TSC.Models.Exam>();
     var chosenIds = chosen.Select(e => e.Id).ToHashSet();
 
-    ViewBag.Batch = batches.FirstOrDefault(b => b.Id == batchId);
+    ViewBag.SchoolClass = schoolClasses.FirstOrDefault(b => b.Id == schoolClassId);
     ViewBag.Chosen = chosen;
     ViewBag.Columns = ViewBag.Columns ?? new List<(TSC.Models.Exam Exam, TSC.Models.ExamSubject Paper)>();
     ViewBag.FullMarks = ViewBag.FullMarks ?? 0m;
 }
 
 <div class="mb-4">
-    <h1>How my batch is doing</h1>
+    <h1>How my class is doing</h1>
     <p class="text-muted mb-0">
         Every paper side by side with totals, averages and merit position. A paper not sat
         counts as zero.
     </p>
 </div>
 
-@if (!batches.Any())
+@if (!schoolClasses.Any())
 {
-    <div class="alert alert-warning">You are not assigned to any batch yet.</div>
+    <div class="alert alert-warning">You are not assigned to any class yet.</div>
 }
 else
 {
@@ -33,11 +33,11 @@ else
         <div class="card-body">
             <form method="get" class="row g-3 align-items-end">
                 <div class="col-md-4">
-                    <label class="form-label" for="batchId">Batch</label>
-                    <select id="batchId" name="batchId" class="form-select" onchange="this.form.submit();">
-                        @foreach (var b in batches)
+                    <label class="form-label" for="schoolClassId">Class</label>
+                    <select id="schoolClassId" name="schoolClassId" class="form-select" onchange="this.form.submit();">
+                        @foreach (var b in schoolClasses)
                         {
-                            <option value="@b.Id" selected="@(b.Id == batchId)">@b.Name</option>
+                            <option value="@b.Id" selected="@(b.Id == schoolClassId)">@b.Name</option>
                         }
                     </select>
                 </div>
@@ -47,7 +47,7 @@ else
 
                     @if (!exams.Any())
                     {
-                        <p class="text-muted mb-0">This batch has no exams yet.</p>
+                        <p class="text-muted mb-0">This class has no exams yet.</p>
                     }
                     else
                     {

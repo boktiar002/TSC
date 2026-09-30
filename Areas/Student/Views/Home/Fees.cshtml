@@ -4,13 +4,13 @@
     ViewData["Title"] = "My Fees";
 
     var student = (TSC.Models.Student)ViewBag.Student;
-    var fee = student.Batch?.MonthlyFee ?? 0m;
+    var fee = student.SchoolClass?.MonthlyFee ?? 0m;
     var byMonth = Model.GroupBy(p => p.ForMonth).OrderByDescending(g => g.Key).ToList();
 }
 
 <h1>My Fees</h1>
 <p class="text-muted">
-    @student.StudentId &middot; @student.Batch?.Name
+    @student.StudentId &middot; @student.SchoolClass?.Name
     @if (fee > 0)
     {
         <text>&middot; @fee.ToString("0.##") per month</text>

@@ -20,7 +20,7 @@
                 <label asp-for="StudentId" class="form-label"></label>
                 <select asp-for="StudentId" class="form-select"
                         asp-items="@(students.Select(s => new SelectListItem(
-                            $"{s.FullName} ({s.StudentId}) — {s.Batch?.Name}", s.Id.ToString())))">
+                            $"{s.FullName} ({s.StudentId}) — {s.SchoolClass?.Name}", s.Id.ToString())))">
                     <option value="">-- Select Student --</option>
                 </select>
                 <span asp-validation-for="StudentId" class="text-danger"></span>

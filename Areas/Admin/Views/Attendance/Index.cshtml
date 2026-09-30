@@ -3,8 +3,8 @@
 @{
     ViewData["Title"] = "Attendance";
 
-    var batches = (IEnumerable<TSC.Models.Batch>)ViewBag.Batches;
-    var batchId = (int?)ViewBag.BatchId;
+    var schoolClasses = (IEnumerable<TSC.Models.SchoolClass>)ViewBag.SchoolClasses;
+    var schoolClassId = (int?)ViewBag.SchoolClassId;
     var date = (DateOnly)ViewBag.Date;
 }
 
@@ -24,10 +24,10 @@
 
 <form method="get" class="row g-2 align-items-end mb-3">
     <div class="col-7 col-sm-4">
-        <label for="batchId" class="form-label">Batch</label>
-        <select id="batchId" name="batchId" class="form-select" required
-                asp-items="@(new SelectList(batches, "Id", "Name", batchId))">
-            <option value="">Select a batch...</option>
+        <label for="schoolClassId" class="form-label">Class</label>
+        <select id="schoolClassId" name="schoolClassId" class="form-select" required
+                asp-items="@(new SelectList(schoolClasses, "Id", "Name", schoolClassId))">
+            <option value="">Select a class...</option>
         </select>
     </div>
 
@@ -43,12 +43,12 @@
 
 @if (Model == null)
 {
-    <div class="alert alert-info">Choose a batch above to take attendance.</div>
+    <div class="alert alert-info">Choose a class above to take attendance.</div>
 }
 else if (!Model.Roster.Any())
 {
     <div class="alert alert-warning">
-        This batch has no students yet.
+        This class has no students yet.
         <a asp-controller="Students" asp-action="Create">Add one</a>.
     </div>
 }

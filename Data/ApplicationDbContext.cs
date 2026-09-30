@@ -13,9 +13,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Teacher> Teachers => Set<Teacher>();
-    public DbSet<Batch> Batches => Set<Batch>();
+    public DbSet<SchoolClass> SchoolClasses => Set<SchoolClass>();
     public DbSet<Subject> Subjects => Set<Subject>();
-    public DbSet<BatchSubject> BatchSubjects => Set<BatchSubject>();
+    public DbSet<ClassSubject> ClassSubjects => Set<ClassSubject>();
     public DbSet<Exam> Exams => Set<Exam>();
     public DbSet<ExamSubject> ExamSubjects => Set<ExamSubject>();
     public DbSet<Mark> Marks => Set<Mark>();
@@ -29,8 +29,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<Student>().HasIndex(s => s.StudentId).IsUnique();
         builder.Entity<Teacher>().HasIndex(t => t.TeacherId).IsUnique();
-        builder.Entity<Batch>().HasIndex(b => b.Name).IsUnique();
-        builder.Entity<BatchSubject>().HasIndex(bs => new { bs.BatchId, bs.SubjectId }).IsUnique();
+        builder.Entity<SchoolClass>().HasIndex(b => b.Name).IsUnique();
+        builder.Entity<ClassSubject>().HasIndex(bs => new { bs.SchoolClassId, bs.SubjectId }).IsUnique();
 
         // One row per student per day: taking attendance twice updates, never duplicates.
         builder.Entity<Attendance>().HasIndex(a => new { a.StudentId, a.Date }).IsUnique();

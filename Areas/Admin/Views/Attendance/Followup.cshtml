@@ -4,8 +4,8 @@
 @{
     ViewData["Title"] = "Attendance Follow-up";
 
-    var batches = (List<Batch>)ViewBag.Batches;
-    var batchId = (int?)ViewBag.BatchId;
+    var schoolClasses = (List<SchoolClass>)ViewBag.SchoolClasses;
+    var schoolClassId = (int?)ViewBag.SchoolClassId;
     var days = (int)ViewBag.Days;
     var threshold = (int)ViewBag.Threshold;
     var from = (DateOnly)ViewBag.From;
@@ -30,12 +30,12 @@
     <div class="card-body">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label" for="batchId">Batch</label>
-                <select class="form-select" id="batchId" name="batchId">
-                    <option value="">All batches</option>
-                    @foreach (var b in batches)
+                <label class="form-label" for="schoolClassId">Class</label>
+                <select class="form-select" id="schoolClassId" name="schoolClassId">
+                    <option value="">All classes</option>
+                    @foreach (var b in schoolClasses)
                     {
-                        <option value="@b.Id" selected="@(b.Id == batchId)">@b.Name</option>
+                        <option value="@b.Id" selected="@(b.Id == schoolClassId)">@b.Name</option>
                     }
                 </select>
             </div>
@@ -89,7 +89,7 @@ else
                 <thead>
                     <tr>
                         <th>Student</th>
-                        <th>Batch</th>
+                        <th>Class</th>
                         <th>Guardian</th>
                         <th>Phone</th>
                         <th class="text-end">Present</th>
@@ -109,7 +109,7 @@ else
                                 <div class="text-muted small">@row.Student.StudentId &middot; Class @row.Student.ClassLevel</div>
                             </td>
 
-                            <td>@row.Student.Batch?.Name</td>
+                            <td>@row.Student.SchoolClass?.Name</td>
 
                             <td>@(string.IsNullOrWhiteSpace(row.Student.GuardianName) ? "—" : row.Student.GuardianName)</td>
 

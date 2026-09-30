@@ -7,11 +7,11 @@ namespace TSC.Data;
 // the rules live here rather than in either controller.
 public static class RollCallBook
 {
-    public static async Task<RollCall> LoadAsync(ApplicationDbContext db, int batchId, DateOnly date)
+    public static async Task<RollCall> LoadAsync(ApplicationDbContext db, int schoolClassId, DateOnly date)
     {
         // Roll order, because that is the order the names get called out.
         var roster = await db.Students
-            .Where(s => s.BatchId == batchId)
+            .Where(s => s.SchoolClassId == schoolClassId)
             .OrderBy(s => s.StudentId)
             .ToListAsync();
 
@@ -23,7 +23,7 @@ public static class RollCallBook
 
         return new RollCall
         {
-            BatchId = batchId,
+            SchoolClassId = schoolClassId,
             Date = date,
             Roster = roster,
             Recorded = recorded,
@@ -31,12 +31,12 @@ public static class RollCallBook
     }
 
     // One tap: present becomes absent and back again. Returns null when the student is not in
-    // that batch, which is what a tampered form looks like.
+    // that class, which is what a tampered form looks like.
     public static async Task<(bool Present, int PresentCount, int Total)?> ToggleAsync(
-        ApplicationDbContext db, int batchId, int studentId, DateOnly date)
+        ApplicationDbContext db, int schoolClassId, int studentId, DateOnly date)
     {
         var roster = await db.Students
-            .Where(s => s.BatchId == batchId)
+            .Where(s => s.SchoolClassId == schoolClassId)
             .Select(s => s.Id)
             .ToListAsync();
 
@@ -47,7 +47,7 @@ public static class RollCallBook
             .Where(a => a.Date == date && roster.Contains(a.StudentId))
             .ToListAsync();
 
-        // The first tap of the day opens the sheet for the whole batch, every one of them
+        // The first tap of the day opens the sheet for the whole class, every one of them
         // absent. Without this, a student nobody called would have no row at all and would
         // quietly drop out of the attendance rate instead of counting against it.
         if (existing.Count == 0)
@@ -63,7 +63,7 @@ public static class RollCallBook
 
         if (row == null)
         {
-            // A student added to the batch after the sheet was opened.
+            // A student added to the class after the sheet was opened.
             row = new Attendance { StudentId = studentId, Date = date, IsPresent = false };
             db.Attendances.Add(row);
             existing.Add(row);

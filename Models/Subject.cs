@@ -12,7 +12,7 @@ public class Subject
     [StringLength(20)]
     public string? Code { get; set; }
 
-    public ICollection<BatchSubject> BatchSubjects { get; set; } = new List<BatchSubject>();
+    public ICollection<ClassSubject> ClassSubjects { get; set; } = new List<ClassSubject>();
 
     public ICollection<ExamSubject> ExamSubjects { get; set; } = new List<ExamSubject>();
 

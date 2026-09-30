@@ -3,8 +3,8 @@
 
     var portals = new (string Icon, string Title, string Text, string Area, string Controller, string Action, bool Visible)[]
     {
-        ("bi-speedometer2", "Office", "Admissions, batches, fees and results.", "Admin", "Dashboard", "Index", User.IsInRole("Admin")),
-        ("bi-person-workspace", "Teachers", "Your batches, attendance and marks entry.", "Teacher", "Home", "Index", User.IsInRole("Teacher")),
+        ("bi-speedometer2", "Office", "Admissions, classes, fees and results.", "Admin", "Dashboard", "Index", User.IsInRole("Admin")),
+        ("bi-person-workspace", "Teachers", "Your classes, attendance and marks entry.", "Teacher", "Home", "Index", User.IsInRole("Teacher")),
         ("bi-mortarboard", "Students", "Results, attendance, fees and notices.", "Student", "Home", "Index", User.IsInRole("Student")),
     };
 }
@@ -15,7 +15,7 @@
             <span class="tsc-eyebrow">Coaching centre management</span>
             <h1 class="mb-3">One place to run the centre, not six notebooks.</h1>
             <p class="lead mb-4">
-                Admissions, batches, attendance, exam results, fee collection and notices &mdash;
+                Admissions, classes, attendance, exam results, fee collection and notices &mdash;
                 for the office, the teachers and every student.
             </p>
 
@@ -70,11 +70,11 @@ else
     <div class="row g-3 mb-2">
         @foreach (var feature in new (string Icon, string Title, string Text)[]
         {
-            ("bi-collection", "Batches & subjects", "Group students by class and batch, assign teachers to the subjects they actually teach."),
-            ("bi-calendar2-check", "Attendance", "Daily roll call per batch, with a running attendance rate for every student."),
+            ("bi-collection", "Classes & subjects", "Group students by class and class, assign teachers to the subjects they actually teach."),
+            ("bi-calendar2-check", "Attendance", "Daily roll call per class, with a running attendance rate for every student."),
             ("bi-clipboard-check", "Exams & results", "Enter marks once, publish grades to students and guardians instantly."),
             ("bi-cash-coin", "Fee collection", "Monthly dues, payments received and what is still outstanding at a glance."),
-            ("bi-megaphone", "Notices", "One notice board that reaches the right batches without a single phone call."),
+            ("bi-megaphone", "Notices", "One notice board that reaches the right classes without a single phone call."),
             ("bi-shield-lock", "Role-based access", "Office, teachers and students each see only what belongs to them."),
         })
         {

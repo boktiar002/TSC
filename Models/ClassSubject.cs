@@ -1,13 +1,11 @@
-﻿using TSC.Models;
-
 namespace TSC.Models;
 
-public class BatchSubject
+public class ClassSubject
 {
     public int Id { get; set; }
 
-    public int BatchId { get; set; }
-    public Batch? Batch { get; set; }
+    public int SchoolClassId { get; set; }
+    public SchoolClass? SchoolClass { get; set; }
 
     public int SubjectId { get; set; }
     public Subject? Subject { get; set; }

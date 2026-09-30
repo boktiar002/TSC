@@ -4,7 +4,7 @@ using TSC.Models;
 namespace TSC.Data;
 
 // The merit sheet the centre prints by hand, worked out once for both the office and the
-// teacher looking at their own batch.
+// teacher looking at their own class.
 public static class Ranking
 {
     // Every marked paper of the selected exams, in the order the papers were added, which is
@@ -14,16 +14,16 @@ public static class Ranking
             .SelectMany(e => e.ExamSubjects.OrderBy(es => es.Id).Select(es => (Exam: e, Paper: es)))
             .ToList();
 
-    // The whole batch scored and placed. An absent paper scores zero, so every selected paper
+    // The whole class scored and placed. An absent paper scores zero, so every selected paper
     // counts towards the denominator; equal totals share a place and the next total takes the
     // next place (1, 1, 2, 3), the convention the centre's own sheets use.
     public static async Task<List<ProgressRow>> RankAsync(
-        ApplicationDbContext db, int batchId, List<Exam> chosen, List<(Exam Exam, ExamSubject Paper)> columns)
+        ApplicationDbContext db, int schoolClassId, List<Exam> chosen, List<(Exam Exam, ExamSubject Paper)> columns)
     {
         var chosenIds = chosen.Select(e => e.Id).ToList();
 
         var students = await db.Students
-            .Where(s => s.BatchId == batchId)
+            .Where(s => s.SchoolClassId == schoolClassId)
             .OrderBy(s => s.StudentId)
             .ToListAsync();
 

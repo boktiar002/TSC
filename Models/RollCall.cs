@@ -1,9 +1,9 @@
 namespace TSC.Models;
 
-// One batch's sheet for one day, as the roll call screen needs it.
+// One class's sheet for one day, as the roll call screen needs it.
 public class RollCall
 {
-    public int BatchId { get; init; }
+    public int SchoolClassId { get; init; }
     public DateOnly Date { get; init; }
     public IReadOnlyList<Student> Roster { get; init; } = [];
 
