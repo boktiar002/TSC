@@ -41,6 +41,18 @@
             </div>
         </div>
 
+        @if (Model.IsVoided)
+        {
+            <div class="alert alert-danger">
+                <strong>VOID</strong> &mdash; this receipt was cancelled and does not count
+                towards any total. It is kept for the record.
+                @if (Model.VoidedAt != null)
+                {
+                    <span>Voided @Clock.ToDhaka(Model.VoidedAt.Value).ToString("dd MMM yyyy, h:mm tt").</span>
+                }
+            </div>
+        }
+
         <dl class="row mb-4">
             <dt class="col-sm-3">Received from</dt>
             <dd class="col-sm-9 mb-1">

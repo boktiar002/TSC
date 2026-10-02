@@ -109,9 +109,11 @@ public class PaymentsController : Controller
     }
 
     // GET: /Admin/Payments/Student/5  -- one student's payment history
+    // Archived students included: their fee ledger is exactly what the archive is for.
     public async Task<IActionResult> Student(int id)
     {
         var student = await _context.Students
+            .IgnoreQueryFilters()
             .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -120,7 +122,9 @@ public class PaymentsController : Controller
 
         ViewBag.Student = student;
 
+        // Voided rows are listed here, struck through, so the ledger stays reconcilable.
         return View(await _context.Payments
+            .IgnoreQueryFilters()
             .Where(p => p.StudentId == id)
             .OrderByDescending(p => p.ForMonth)
             .ThenByDescending(p => p.PaymentDate)
@@ -131,6 +135,7 @@ public class PaymentsController : Controller
     public async Task<IActionResult> Receipt(int id)
     {
         var payment = await _context.Payments
+            .IgnoreQueryFilters()
             .Include(p => p.Student).ThenInclude(s => s!.SchoolClass)
             .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -140,6 +145,8 @@ public class PaymentsController : Controller
         // Everything received for that month, not just this slip, so the balance is honest
         // even when the fee was handed over in instalments.
         var paidForMonth = await _context.Payments
+            // Archived only: a voided receipt must not count towards the month's total.
+            .IgnoreQueryFilters(["Archived"])
             .Where(p => p.StudentId == payment.StudentId && p.ForMonth == payment.ForMonth)
             .SumAsync(p => (decimal?)p.Amount) ?? 0m;
 
@@ -149,20 +156,35 @@ public class PaymentsController : Controller
         return View(payment);
     }
 
-    // POST: /Admin/Payments/Delete/5  -- for a mis-keyed receipt
+    // POST: /Admin/Payments/Void/5  -- for a mis-keyed receipt
+    // Voided, not deleted: the guardian may be holding the paper copy, and a ledger that can
+    // lose rows cannot be reconciled against the cash box. The row stays, out of every total,
+    // with the admin who voided it recorded against it.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Void(int id)
     {
-        var payment = await _context.Payments.FirstOrDefaultAsync(p => p.Id == id);
+        // Ignore both filters: voiding an already-voided row is a no-op, not a 404, and an
+        // archived student's mis-keyed receipt still needs voiding.
+        var payment = await _context.Payments
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         if (payment == null)
             return NotFound();
 
-        _context.Payments.Remove(payment);
-        await _context.SaveChangesAsync();
+        if (payment.IsVoided)
+            TempData["Error"] = "That receipt is already voided.";
+        else
+        {
+            payment.IsVoided = true;
+            payment.VoidedAt = DateTime.UtcNow;
+            payment.VoidedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        TempData["Success"] = "Payment record deleted.";
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Receipt No. {payment.Id:D5} voided. It no longer counts towards any total.";
+        }
 
         return RedirectToAction(nameof(Student), new { id = payment.StudentId });
     }
