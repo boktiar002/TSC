@@ -131,9 +131,11 @@ public class AttendanceController : Controller
     }
 
     // GET: /Admin/Attendance/Student/5  -- one student's record
+    // Archived students included, same as their fee history.
     public async Task<IActionResult> Student(int id)
     {
         var student = await _context.Students
+            .IgnoreQueryFilters()
             .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -143,6 +145,7 @@ public class AttendanceController : Controller
         ViewBag.Student = student;
 
         return View(await _context.Attendances
+            .IgnoreQueryFilters()
             .Where(a => a.StudentId == id)
             .OrderByDescending(a => a.Date)
             .ToListAsync());

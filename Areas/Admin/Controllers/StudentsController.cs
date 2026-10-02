@@ -148,12 +148,15 @@ public class StudentsController : Controller
     }
 
     // GET: /Admin/Students/Details/5
+    // IgnoreQueryFilters: an archived student is still readable here. Keeping their marks,
+    // attendance and fees is the whole reason they were archived rather than deleted.
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null)
             return NotFound();
 
         var student = await _context.Students
+            .IgnoreQueryFilters()
             .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -204,6 +207,7 @@ public class StudentsController : Controller
             return NotFound();
 
         var student = await _context.Students
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
@@ -232,6 +236,7 @@ public class StudentsController : Controller
         }
 
         var existingStudent = await _context.Students
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (existingStudent == null)
