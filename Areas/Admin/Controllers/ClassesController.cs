@@ -38,6 +38,9 @@ public class ClassesController : Controller
         if (await _context.SchoolClasses.AnyAsync(b => b.Name == schoolClass.Name))
             ModelState.AddModelError(nameof(schoolClass.Name), "A class with that name already exists.");
 
+        if (await _context.SchoolClasses.AnyAsync(b => b.Level == schoolClass.Level))
+            ModelState.AddModelError(nameof(schoolClass.Level), "Another class is already on that level.");
+
         if (!ModelState.IsValid)
             return View(schoolClass);
 
@@ -73,6 +76,11 @@ public class ClassesController : Controller
         if (await _context.SchoolClasses.AnyAsync(b => b.Name == schoolClass.Name && b.Id != id))
             ModelState.AddModelError(nameof(schoolClass.Name), "A class with that name already exists.");
 
+        // Level is uniquely indexed -- two classes on one level would generate colliding
+        // student IDs. Catch it here so it is a message on the form, not a 500.
+        if (await _context.SchoolClasses.AnyAsync(b => b.Level == schoolClass.Level && b.Id != id))
+            ModelState.AddModelError(nameof(schoolClass.Level), "Another class is already on that level.");
+
         if (!ModelState.IsValid)
             return View(schoolClass);
 
@@ -84,6 +92,7 @@ public class ClassesController : Controller
         existing.Name = schoolClass.Name;
         existing.Description = schoolClass.Description;
         existing.MonthlyFee = schoolClass.MonthlyFee;
+        existing.Level = schoolClass.Level;
 
         await _context.SaveChangesAsync();
 
