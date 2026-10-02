@@ -66,7 +66,7 @@ public class PaymentsController : Controller
         {
             StudentId = studentId ?? 0,
             ForMonth = forMonth,
-            PaymentDate = DateOnly.FromDateTime(DateTime.Today),
+            PaymentDate = Clock.Today,
             PaymentMethod = Methods[0]
         };
 
@@ -82,7 +82,7 @@ public class PaymentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Payment payment)
     {
-        payment.ForMonth = FirstOfMonth(payment.ForMonth);
+        payment.ForMonth = Clock.FirstOf(payment.ForMonth);
 
         if (!await _context.Students.AnyAsync(s => s.Id == payment.StudentId))
             ModelState.AddModelError(nameof(payment.StudentId), "Please select a student.");
@@ -191,7 +191,6 @@ public class PaymentsController : Controller
             .ToListAsync();
     }
 
-    private static DateOnly FirstOfMonth(DateOnly date) => new(date.Year, date.Month, 1);
 
     // <input type="month"> posts "2026-09"; our own links pass "2026-09-01". Accept both,
     // and never let a junk query string throw — fall back to the current month.
@@ -202,7 +201,7 @@ public class PaymentsController : Controller
             : value.Length == 7 ? value + "-01" : value;
 
         return DateOnly.TryParse(text, CultureInfo.InvariantCulture, out var parsed)
-            ? FirstOfMonth(parsed)
-            : FirstOfMonth(DateOnly.FromDateTime(DateTime.Today));
+            ? Clock.FirstOf(parsed)
+            : Clock.ThisMonth;
     }
 }

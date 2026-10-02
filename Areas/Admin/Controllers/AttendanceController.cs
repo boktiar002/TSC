@@ -20,7 +20,7 @@ public class AttendanceController : Controller
     // GET: /Admin/Attendance?schoolClassId=1&date=2026-09-28  -- the daily sheet
     public async Task<IActionResult> Index(int? schoolClassId, DateOnly? date)
     {
-        var day = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var day = date ?? Clock.Today;
 
         ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();
         ViewBag.SchoolClassId = schoolClassId;
@@ -64,7 +64,7 @@ public class AttendanceController : Controller
         days = Math.Clamp(days, 7, 365);
         threshold = Math.Clamp(threshold, 1, 100);
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = Clock.Today;
         var from = today.AddDays(-days);
 
         ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();

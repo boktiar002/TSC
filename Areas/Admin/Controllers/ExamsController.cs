@@ -36,7 +36,7 @@ public class ExamsController : Controller
     {
         await LoadSchoolClasses();
 
-        return View(new Exam { ExamDate = DateOnly.FromDateTime(DateTime.Today) });
+        return View(new Exam { ExamDate = Clock.Today });
     }
 
     // POST: /Admin/Exams/Create
@@ -311,7 +311,7 @@ public class ExamsController : Controller
             .Select(g => new { Days = g.Count(), Present = g.Count(a => a.IsPresent) })
             .FirstOrDefaultAsync();
 
-        var thisMonth = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, 1);
+        var thisMonth = Clock.ThisMonth;
 
         var paid = await _context.Payments
             .Where(p => p.StudentId == id && p.ForMonth == thisMonth)

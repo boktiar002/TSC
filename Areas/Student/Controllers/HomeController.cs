@@ -26,8 +26,8 @@ public class HomeController : Controller
         if (me == null)
             return View("NotLinked");
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        var thisMonth = new DateOnly(today.Year, today.Month, 1);
+        var today = Clock.Today;
+        var thisMonth = Clock.FirstOf(today);
 
         var attendance = await _context.Attendances
             .Where(a => a.StudentId == me.Id)

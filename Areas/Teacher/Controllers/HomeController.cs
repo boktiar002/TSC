@@ -72,7 +72,7 @@ public class HomeController : Controller
             return View("NotLinked");
 
         var mine = MyClasses(me);
-        var day = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var day = date ?? Clock.Today;
 
         // One class and no choice to make: open it.
         schoolClassId ??= mine.Count == 1 ? mine[0].Id : null;

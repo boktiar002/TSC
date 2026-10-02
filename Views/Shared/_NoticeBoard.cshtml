@@ -12,7 +12,7 @@ else
             <h6 class="mb-1">@notice.Title</h6>
 
             <small class="text-muted d-block mb-2">
-                @notice.PublishedAt.ToLocalTime().ToString("dd MMM yyyy, h:mm tt")
+                @Clock.ToDhaka(notice.PublishedAt).ToString("dd MMM yyyy, h:mm tt")
             </small>
 
             <p class="mb-0" style="white-space: pre-wrap;">@notice.Content</p>
