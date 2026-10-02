@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TSC.Models;
 
-// One of the four classes the centre runs: 2, 3, 4 and 5. Morning and afternoon are not
+// One of the four classes the centre runs: 2, 3, 4 and 5. Morning and evening are not
 // separate classes -- both branches sit the same paper and are ranked together, so exams,
 // subjects, fees, ranking and attendance are all per class. Which branch a child attends
 // is Student.Batch.

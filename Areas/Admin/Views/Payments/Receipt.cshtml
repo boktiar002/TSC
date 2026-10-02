@@ -52,7 +52,7 @@
             </dd>
 
             <dt class="col-sm-3">Class &amp; batch</dt>
-            <dd class="col-sm-9 mb-1">Class @student.ClassLevel &middot; @student.SchoolClass?.Name</dd>
+            <dd class="col-sm-9 mb-1">@student.SchoolClass?.Name@(string.IsNullOrWhiteSpace(student.Batch) ? "" : " · " + student.Batch)</dd>
 
             <dt class="col-sm-3">Fee for</dt>
             <dd class="col-sm-9 mb-1">@Model.ForMonth.ToString("MMMM yyyy")</dd>

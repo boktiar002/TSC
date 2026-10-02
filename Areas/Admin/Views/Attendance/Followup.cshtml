@@ -106,7 +106,7 @@ else
                             <td>
                                 <a asp-controller="Students" asp-action="Details" asp-route-id="@row.Student.Id"
                                    class="text-decoration-none">@row.Student.FullName</a>
-                                <div class="text-muted small">@row.Student.StudentId &middot; Class @row.Student.ClassLevel</div>
+                                <div class="text-muted small">@row.Student.StudentId</div>
                             </td>
 
                             <td>@row.Student.SchoolClass?.Name</td>

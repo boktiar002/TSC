@@ -5,10 +5,8 @@
     var archivedCount = (int)ViewBag.ArchivedCount;
     var query = (string?)ViewBag.Query;
     var schoolClassId = (int?)ViewBag.SchoolClassId;
-    var classLevel = (string?)ViewBag.ClassLevel;
     var schoolClasses = (List<TSC.Models.SchoolClass>)ViewBag.SchoolClasses;
-    var classLevels = (List<string>)ViewBag.ClassLevels;
-    var filtered = !string.IsNullOrWhiteSpace(query) || schoolClassId > 0 || !string.IsNullOrWhiteSpace(classLevel);
+    var filtered = !string.IsNullOrWhiteSpace(query) || schoolClassId > 0;
 
     ViewData["Title"] = archived ? "Archived Students" : "Students";
 }
@@ -70,17 +68,6 @@
                 </select>
             </div>
 
-            <div class="col-md-2">
-                <label class="form-label" for="classLevel">Class</label>
-                <select class="form-select" id="classLevel" name="classLevel">
-                    <option value="">All</option>
-                    @foreach (var c in classLevels)
-                    {
-                        <option value="@c" selected="@(c == classLevel)">Class @c</option>
-                    }
-                </select>
-            </div>
-
             <div class="col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary flex-grow-1">Search</button>
 
@@ -135,7 +122,7 @@
                             <th>Student ID</th>
                             <th>Name</th>
                             <th>Class</th>
-                            <th>Class</th>
+                            <th>Batch</th>
                             <th>Guardian</th>
                             <th>Phone</th>
                             <th>Actions</th>
@@ -157,11 +144,18 @@
                                 </td>
 
                                 <td>
-                                    Class @student.ClassLevel
+                                    @student.SchoolClass?.Name
                                 </td>
 
                                 <td>
-                                    @student.SchoolClass?.Name
+                                    @if (string.IsNullOrWhiteSpace(student.Batch))
+                                    {
+                                        <span class="text-muted" title="No batch set">&mdash;</span>
+                                    }
+                                    else
+                                    {
+                                        @student.Batch
+                                    }
                                 </td>
 
                                 <td>

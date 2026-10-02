@@ -89,7 +89,7 @@
             <dd class="col-sm-4 mb-1"><strong>@student.FullName</strong> (@student.StudentId)</dd>
 
             <dt class="col-sm-2">Class &amp; batch</dt>
-            <dd class="col-sm-4 mb-1">Class @student.ClassLevel &middot; @student.SchoolClass?.Name</dd>
+            <dd class="col-sm-4 mb-1">@student.SchoolClass?.Name@(string.IsNullOrWhiteSpace(student.Batch) ? "" : " · " + student.Batch)</dd>
 
             <dt class="col-sm-2">Guardian</dt>
             <dd class="col-sm-4 mb-1">@(string.IsNullOrWhiteSpace(student.GuardianName) ? "—" : student.GuardianName)</dd>
