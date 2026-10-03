@@ -12,10 +12,10 @@ public class Exam
     [DataType(DataType.Date), Display(Name = "Exam Date")]
     public DateOnly ExamDate { get; set; }
 
-    [Range(1, int.MaxValue, ErrorMessage = "Please select a batch.")]
-    [Display(Name = "Batch")]
-    public int BatchId { get; set; }
-    public Batch? Batch { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Please select a class.")]
+    [Display(Name = "Class")]
+    public int SchoolClassId { get; set; }
+    public SchoolClass? SchoolClass { get; set; }
 
     public ICollection<ExamSubject> ExamSubjects { get; set; } = new List<ExamSubject>();
 

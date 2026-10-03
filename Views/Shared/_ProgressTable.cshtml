@@ -2,7 +2,7 @@
 
 @*
     The merit sheet, shared by the office (/Admin/Exams/Progress) and the teacher looking at
-    their own batch (/Teacher/Home/Progress). Report cards are the office's to issue, so that
+    their own class (/Teacher/Home/Progress). Report cards are the office's to issue, so that
     column only appears for an admin.
 *@
 
@@ -10,7 +10,7 @@
     var chosen = (List<Exam>)ViewBag.Chosen;
     var columns = (List<(Exam Exam, ExamSubject Paper)>)ViewBag.Columns;
     var fullMarks = (decimal)ViewBag.FullMarks;
-    var batch = (Batch?)ViewBag.Batch;
+    var schoolClass = (SchoolClass?)ViewBag.SchoolClass;
 
     var sat = Model.Count(r => r.PapersSat > 0);
 
@@ -36,7 +36,7 @@
         <div class="card-body text-center py-5">
             <h5>Nothing to rank yet</h5>
             <p class="text-muted mb-0">
-                @(batch == null ? "Pick a batch first." : $"{batch.Name} needs students and at least one exam.")
+                @(schoolClass == null ? "Pick a class first." : $"{schoolClass.Name} needs students and at least one exam.")
             </p>
         </div>
     </div>
@@ -46,7 +46,7 @@ else
     <div class="card shadow-sm">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
             <strong>
-                @batch?.Name &middot;
+                @schoolClass?.Name &middot;
                 @chosen.Count exam@(chosen.Count == 1 ? "" : "s"),
                 @columns.Count paper@(columns.Count == 1 ? "" : "s") &middot;
                 out of @fullMarks.ToString("0.##")

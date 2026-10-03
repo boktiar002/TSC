@@ -1,33 +1,33 @@
-﻿@model IEnumerable<TSC.Models.Batch>
+﻿@model IEnumerable<TSC.Models.SchoolClass>
 
 @{
-    ViewData["Title"] = "Batches";
+    ViewData["Title"] = "Classes";
 }
 
 <div class="container mt-4">
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-            <h1>Batches</h1>
-            <p class="text-muted">Manage coaching batches.</p>
+            <h1>Classes</h1>
+            <p class="text-muted">Manage coaching classes.</p>
         </div>
 
         <a asp-action="Create" class="btn btn-primary">
-            + Create Batch
+            + Create Class
         </a>
     </div>
 
         @if (!Model.Any())
     {
         <div class="alert alert-info">
-            No batches created yet.
+            No classes created yet.
         </div>
     }
     else
     {
         <div class="row">
 
-            @foreach (var batch in Model)
+            @foreach (var schoolClass in Model)
             {
                 <div class="col-md-4 mb-4">
 
@@ -35,12 +35,12 @@
 
                         <div class="card-body">
 
-                            <h4>@batch.Name</h4>
+                            <h4>@schoolClass.Name</h4>
 
-                            @if (!string.IsNullOrWhiteSpace(batch.Description))
+                            @if (!string.IsNullOrWhiteSpace(schoolClass.Description))
                             {
                                 <p class="text-muted">
-                                    @batch.Description
+                                    @schoolClass.Description
                                 </p>
                             }
 
@@ -48,27 +48,27 @@
 
                             <p>
                                 <strong>Students:</strong>
-                                @batch.Students.Count
+                                @schoolClass.Students.Count
                             </p>
 
                             <p>
                                 <strong>Subjects:</strong>
-                                @batch.BatchSubjects.Count
+                                @schoolClass.ClassSubjects.Count
                             </p>
 
                             <p>
                                 <strong>Monthly fee:</strong>
-                                @(batch.MonthlyFee > 0 ? batch.MonthlyFee.ToString("0.##") : "not set")
+                                @(schoolClass.MonthlyFee > 0 ? schoolClass.MonthlyFee.ToString("0.##") : "not set")
                             </p>
 
                             <a asp-action="Details"
-                               asp-route-id="@batch.Id"
+                               asp-route-id="@schoolClass.Id"
                                class="btn btn-outline-primary">
-                                Manage Batch
+                                Manage Class
                             </a>
 
                             <a asp-action="Edit"
-                               asp-route-id="@batch.Id"
+                               asp-route-id="@schoolClass.Id"
                                class="btn btn-outline-secondary">
                                 Edit
                             </a>

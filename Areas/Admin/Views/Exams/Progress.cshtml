@@ -1,21 +1,21 @@
 @model IReadOnlyList<TSC.Models.ProgressRow>
 
 @{
-    ViewData["Title"] = "Batch Progress";
+    ViewData["Title"] = "Class Progress";
 
-    var batches = (List<Batch>)ViewBag.Batches;
+    var schoolClasses = (List<SchoolClass>)ViewBag.SchoolClasses;
     var exams = (List<Exam>)ViewBag.Exams;
     var chosen = (List<Exam>)ViewBag.Chosen;
-    var batchId = (int?)ViewBag.BatchId;
+    var schoolClassId = (int?)ViewBag.SchoolClassId;
 
     var chosenIds = chosen.Select(e => e.Id).ToHashSet();
 
-    ViewBag.Batch = batches.FirstOrDefault(b => b.Id == batchId);
+    ViewBag.SchoolClass = schoolClasses.FirstOrDefault(b => b.Id == schoolClassId);
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
-        <h1>Batch progress</h1>
+        <h1>Class progress</h1>
         <p class="text-muted mb-0">
             Every selected paper side by side, with totals, averages and merit position.
             A paper not sat counts as zero.
@@ -31,11 +31,11 @@
     <div class="card-body">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label" for="batchId">Batch</label>
-                <select id="batchId" name="batchId" class="form-select" onchange="this.form.submit();">
-                    @foreach (var b in batches)
+                <label class="form-label" for="schoolClassId">Class</label>
+                <select id="schoolClassId" name="schoolClassId" class="form-select" onchange="this.form.submit();">
+                    @foreach (var b in schoolClasses)
                     {
-                        <option value="@b.Id" selected="@(b.Id == batchId)">@b.Name</option>
+                        <option value="@b.Id" selected="@(b.Id == schoolClassId)">@b.Name</option>
                     }
                 </select>
             </div>
@@ -45,7 +45,7 @@
 
                 @if (!exams.Any())
                 {
-                    <p class="text-muted mb-0">This batch has no exams yet.</p>
+                    <p class="text-muted mb-0">This class has no exams yet.</p>
                 }
                 else
                 {
@@ -71,7 +71,7 @@
                     <i class="bi bi-funnel me-1"></i>Apply
                 </button>
                 <span class="text-muted small ms-2">
-                    Nothing ticked counts every exam in the batch.
+                    Nothing ticked counts every exam in the class.
                 </span>
             </div>
         </form>

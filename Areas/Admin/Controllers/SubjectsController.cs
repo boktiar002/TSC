@@ -21,7 +21,7 @@ public class SubjectsController : Controller
     public async Task<IActionResult> Index()
     {
         ViewBag.Subjects = await _context.Subjects
-            .Include(s => s.BatchSubjects)
+            .Include(s => s.ClassSubjects)
             .OrderBy(s => s.Name)
             .ToListAsync();
 
@@ -39,7 +39,7 @@ public class SubjectsController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.Subjects = await _context.Subjects
-                .Include(s => s.BatchSubjects)
+                .Include(s => s.ClassSubjects)
                 .OrderBy(s => s.Name)
                 .ToListAsync();
 
@@ -109,9 +109,9 @@ public class SubjectsController : Controller
             return NotFound();
 
         // Cascade would take recorded marks down with it.
-        if (await _context.BatchSubjects.AnyAsync(bs => bs.SubjectId == id)
+        if (await _context.ClassSubjects.AnyAsync(bs => bs.SubjectId == id)
             || await _context.Marks.AnyAsync(m => m.SubjectId == id))
-            TempData["Error"] = $"\"{subject.Name}\" is in use by a batch or has marks recorded. Remove those first.";
+            TempData["Error"] = $"\"{subject.Name}\" is in use by a class or has marks recorded. Remove those first.";
         else
         {
             _context.Subjects.Remove(subject);

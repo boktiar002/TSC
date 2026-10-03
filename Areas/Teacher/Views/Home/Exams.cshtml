@@ -21,7 +21,7 @@ else
                 <thead>
                     <tr>
                         <th>Exam</th>
-                        <th>Batch</th>
+                        <th>Class</th>
                         <th>Date</th>
                         <th>My papers</th>
                         <th class="text-end"></th>
@@ -30,8 +30,8 @@ else
                 <tbody>
                     @foreach (var exam in Model)
                     {
-                        var mySubjectIds = me.BatchSubjects
-                            .Where(bs => bs.BatchId == exam.BatchId)
+                        var mySubjectIds = me.ClassSubjects
+                            .Where(bs => bs.SchoolClassId == exam.SchoolClassId)
                             .Select(bs => bs.SubjectId)
                             .ToHashSet();
 
@@ -42,7 +42,7 @@ else
 
                         <tr>
                             <td><strong>@exam.Name</strong></td>
-                            <td>@exam.Batch?.Name</td>
+                            <td>@exam.SchoolClass?.Name</td>
                             <td>@exam.ExamDate.ToString("dd MMM yyyy")</td>
                             <td>
                                 @foreach (var paper in mine)

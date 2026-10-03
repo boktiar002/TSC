@@ -247,7 +247,7 @@ namespace TSC.Migrations
                     b.ToTable("Attendances");
                 });
 
-            modelBuilder.Entity("TSC.Models.Batch", b =>
+            modelBuilder.Entity("TSC.Models.ClassSubject", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -255,35 +255,7 @@ namespace TSC.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
-
-                    b.Property<decimal>("MonthlyFee")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("character varying(60)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Batches");
-                });
-
-            modelBuilder.Entity("TSC.Models.BatchSubject", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BatchId")
+                    b.Property<int>("SchoolClassId")
                         .HasColumnType("integer");
 
                     b.Property<int>("SubjectId")
@@ -298,10 +270,10 @@ namespace TSC.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.HasIndex("BatchId", "SubjectId")
+                    b.HasIndex("SchoolClassId", "SubjectId")
                         .IsUnique();
 
-                    b.ToTable("BatchSubjects");
+                    b.ToTable("ClassSubjects");
                 });
 
             modelBuilder.Entity("TSC.Models.Exam", b =>
@@ -312,9 +284,6 @@ namespace TSC.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BatchId")
-                        .HasColumnType("integer");
-
                     b.Property<DateOnly>("ExamDate")
                         .HasColumnType("date");
 
@@ -323,9 +292,12 @@ namespace TSC.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("character varying(80)");
 
+                    b.Property<int>("SchoolClassId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("BatchId");
+                    b.HasIndex("SchoolClassId");
 
                     b.ToTable("Exams");
                 });
@@ -432,6 +404,9 @@ namespace TSC.Migrations
                     b.Property<DateOnly>("ForMonth")
                         .HasColumnType("date");
 
+                    b.Property<bool>("IsVoided")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Note")
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
@@ -446,11 +421,51 @@ namespace TSC.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("VoidedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VoidedByUserId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("StudentId");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("TSC.Models.SchoolClass", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("MonthlyFee")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Level")
+                        .IsUnique();
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("SchoolClasses");
                 });
 
             modelBuilder.Entity("TSC.Models.Student", b =>
@@ -465,10 +480,7 @@ namespace TSC.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
 
-                    b.Property<int>("BatchId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ClassLevel")
+                    b.Property<string>("Batch")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
@@ -501,6 +513,9 @@ namespace TSC.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<int>("SchoolClassId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("StudentId")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -511,7 +526,7 @@ namespace TSC.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BatchId");
+                    b.HasIndex("SchoolClassId");
 
                     b.HasIndex("StudentId")
                         .IsUnique();
@@ -650,27 +665,27 @@ namespace TSC.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("TSC.Models.BatchSubject", b =>
+            modelBuilder.Entity("TSC.Models.ClassSubject", b =>
                 {
-                    b.HasOne("TSC.Models.Batch", "Batch")
-                        .WithMany("BatchSubjects")
-                        .HasForeignKey("BatchId")
+                    b.HasOne("TSC.Models.SchoolClass", "SchoolClass")
+                        .WithMany("ClassSubjects")
+                        .HasForeignKey("SchoolClassId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TSC.Models.Subject", "Subject")
-                        .WithMany("BatchSubjects")
+                        .WithMany("ClassSubjects")
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TSC.Models.Teacher", "Teacher")
-                        .WithMany("BatchSubjects")
+                        .WithMany("ClassSubjects")
                         .HasForeignKey("TeacherId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Batch");
+                    b.Navigation("SchoolClass");
 
                     b.Navigation("Subject");
 
@@ -679,13 +694,13 @@ namespace TSC.Migrations
 
             modelBuilder.Entity("TSC.Models.Exam", b =>
                 {
-                    b.HasOne("TSC.Models.Batch", "Batch")
+                    b.HasOne("TSC.Models.SchoolClass", "SchoolClass")
                         .WithMany("Exams")
-                        .HasForeignKey("BatchId")
+                        .HasForeignKey("SchoolClassId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Batch");
+                    b.Navigation("SchoolClass");
                 });
 
             modelBuilder.Entity("TSC.Models.ExamSubject", b =>
@@ -747,22 +762,13 @@ namespace TSC.Migrations
 
             modelBuilder.Entity("TSC.Models.Student", b =>
                 {
-                    b.HasOne("TSC.Models.Batch", "Batch")
+                    b.HasOne("TSC.Models.SchoolClass", "SchoolClass")
                         .WithMany("Students")
-                        .HasForeignKey("BatchId")
+                        .HasForeignKey("SchoolClassId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Batch");
-                });
-
-            modelBuilder.Entity("TSC.Models.Batch", b =>
-                {
-                    b.Navigation("BatchSubjects");
-
-                    b.Navigation("Exams");
-
-                    b.Navigation("Students");
+                    b.Navigation("SchoolClass");
                 });
 
             modelBuilder.Entity("TSC.Models.Exam", b =>
@@ -772,9 +778,18 @@ namespace TSC.Migrations
                     b.Navigation("Marks");
                 });
 
+            modelBuilder.Entity("TSC.Models.SchoolClass", b =>
+                {
+                    b.Navigation("ClassSubjects");
+
+                    b.Navigation("Exams");
+
+                    b.Navigation("Students");
+                });
+
             modelBuilder.Entity("TSC.Models.Subject", b =>
                 {
-                    b.Navigation("BatchSubjects");
+                    b.Navigation("ClassSubjects");
 
                     b.Navigation("ExamSubjects");
 
@@ -783,7 +798,7 @@ namespace TSC.Migrations
 
             modelBuilder.Entity("TSC.Models.Teacher", b =>
                 {
-                    b.Navigation("BatchSubjects");
+                    b.Navigation("ClassSubjects");
                 });
 #pragma warning restore 612, 618
         }

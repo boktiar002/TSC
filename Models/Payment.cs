@@ -27,4 +27,16 @@ public class Payment
 
     [StringLength(250)]
     public string? Note { get; set; }
+
+    // A mis-keyed receipt is voided, never deleted. The guardian may be holding the paper
+    // copy, and a fee ledger that can silently lose rows cannot be reconciled against the
+    // cash box. Voided rows are kept out of every total by a query filter and shown struck
+    // through on the ledger.
+    public bool IsVoided { get; set; }
+
+    [Display(Name = "Voided on")]
+    public DateTime? VoidedAt { get; set; } // timestamptz: must be UTC
+
+    // The admin who voided it, so a disputed receipt has someone to ask.
+    public string? VoidedByUserId { get; set; }
 }

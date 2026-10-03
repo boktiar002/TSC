@@ -20,7 +20,7 @@ public class DashboardController : Controller
     {
         ViewBag.StudentCount = await _context.Students.CountAsync();
         ViewBag.TeacherCount = await _context.Teachers.CountAsync();
-        ViewBag.BatchCount = await _context.Batches.CountAsync();
+        ViewBag.SchoolClassCount = await _context.SchoolClasses.CountAsync();
         ViewBag.SubjectCount = await _context.Subjects.CountAsync();
 
         return View();

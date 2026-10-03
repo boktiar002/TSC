@@ -20,36 +20,36 @@ public class PaymentsController : Controller
         _context = context;
     }
 
-    // GET: /Admin/Payments?batchId=1&month=2026-09  -- who owes what this month
-    public async Task<IActionResult> Index(int? batchId, string? month)
+    // GET: /Admin/Payments?schoolClassId=1&month=2026-09  -- who owes what this month
+    public async Task<IActionResult> Index(int? schoolClassId, string? month)
     {
         var forMonth = ParseMonth(month);
 
-        ViewBag.Batches = await _context.Batches.OrderBy(b => b.Name).ToListAsync();
-        ViewBag.BatchId = batchId;
+        ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();
+        ViewBag.SchoolClassId = schoolClassId;
         ViewBag.Month = forMonth;
 
-        if (batchId == null)
+        if (schoolClassId == null)
             return View(new List<Student>());
 
-        var batch = await _context.Batches.FirstOrDefaultAsync(b => b.Id == batchId);
+        var schoolClass = await _context.SchoolClasses.FirstOrDefaultAsync(b => b.Id == schoolClassId);
 
-        if (batch == null)
+        if (schoolClass == null)
             return NotFound();
 
         var roster = await _context.Students
-            .Where(s => s.BatchId == batchId)
+            .Where(s => s.SchoolClassId == schoolClassId)
             .OrderBy(s => s.FullName)
             .ToListAsync();
 
         // Partial payments are normal, so sum rather than take the first row.
         ViewBag.PaidByStudent = await _context.Payments
-            .Where(p => p.ForMonth == forMonth && p.Student!.BatchId == batchId)
+            .Where(p => p.ForMonth == forMonth && p.Student!.SchoolClassId == schoolClassId)
             .GroupBy(p => p.StudentId)
             .Select(g => new { StudentId = g.Key, Paid = g.Sum(p => p.Amount) })
             .ToDictionaryAsync(x => x.StudentId, x => x.Paid);
 
-        ViewBag.Batch = batch;
+        ViewBag.SchoolClass = schoolClass;
 
         return View(roster);
     }
@@ -66,7 +66,7 @@ public class PaymentsController : Controller
         {
             StudentId = studentId ?? 0,
             ForMonth = forMonth,
-            PaymentDate = DateOnly.FromDateTime(DateTime.Today),
+            PaymentDate = Clock.Today,
             PaymentMethod = Methods[0]
         };
 
@@ -82,7 +82,7 @@ public class PaymentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Payment payment)
     {
-        payment.ForMonth = FirstOfMonth(payment.ForMonth);
+        payment.ForMonth = Clock.FirstOf(payment.ForMonth);
 
         if (!await _context.Students.AnyAsync(s => s.Id == payment.StudentId))
             ModelState.AddModelError(nameof(payment.StudentId), "Please select a student.");
@@ -103,16 +103,18 @@ public class PaymentsController : Controller
 
         return RedirectToAction(nameof(Index), new
         {
-            batchId = student.BatchId,
+            schoolClassId = student.SchoolClassId,
             month = payment.ForMonth.ToString("yyyy-MM")
         });
     }
 
     // GET: /Admin/Payments/Student/5  -- one student's payment history
+    // Archived students included: their fee ledger is exactly what the archive is for.
     public async Task<IActionResult> Student(int id)
     {
         var student = await _context.Students
-            .Include(s => s.Batch)
+            .IgnoreQueryFilters()
+            .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
@@ -120,7 +122,9 @@ public class PaymentsController : Controller
 
         ViewBag.Student = student;
 
+        // Voided rows are listed here, struck through, so the ledger stays reconcilable.
         return View(await _context.Payments
+            .IgnoreQueryFilters()
             .Where(p => p.StudentId == id)
             .OrderByDescending(p => p.ForMonth)
             .ThenByDescending(p => p.PaymentDate)
@@ -131,7 +135,8 @@ public class PaymentsController : Controller
     public async Task<IActionResult> Receipt(int id)
     {
         var payment = await _context.Payments
-            .Include(p => p.Student).ThenInclude(s => s!.Batch)
+            .IgnoreQueryFilters()
+            .Include(p => p.Student).ThenInclude(s => s!.SchoolClass)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (payment?.Student == null)
@@ -140,29 +145,46 @@ public class PaymentsController : Controller
         // Everything received for that month, not just this slip, so the balance is honest
         // even when the fee was handed over in instalments.
         var paidForMonth = await _context.Payments
+            // Archived only: a voided receipt must not count towards the month's total.
+            .IgnoreQueryFilters(["Archived"])
             .Where(p => p.StudentId == payment.StudentId && p.ForMonth == payment.ForMonth)
             .SumAsync(p => (decimal?)p.Amount) ?? 0m;
 
         ViewBag.PaidForMonth = paidForMonth;
-        ViewBag.MonthlyFee = payment.Student.Batch?.MonthlyFee ?? 0m;
+        ViewBag.MonthlyFee = payment.Student.SchoolClass?.MonthlyFee ?? 0m;
 
         return View(payment);
     }
 
-    // POST: /Admin/Payments/Delete/5  -- for a mis-keyed receipt
+    // POST: /Admin/Payments/Void/5  -- for a mis-keyed receipt
+    // Voided, not deleted: the guardian may be holding the paper copy, and a ledger that can
+    // lose rows cannot be reconciled against the cash box. The row stays, out of every total,
+    // with the admin who voided it recorded against it.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Void(int id)
     {
-        var payment = await _context.Payments.FirstOrDefaultAsync(p => p.Id == id);
+        // Ignore both filters: voiding an already-voided row is a no-op, not a 404, and an
+        // archived student's mis-keyed receipt still needs voiding.
+        var payment = await _context.Payments
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         if (payment == null)
             return NotFound();
 
-        _context.Payments.Remove(payment);
-        await _context.SaveChangesAsync();
+        if (payment.IsVoided)
+            TempData["Error"] = "That receipt is already voided.";
+        else
+        {
+            payment.IsVoided = true;
+            payment.VoidedAt = DateTime.UtcNow;
+            payment.VoidedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        TempData["Success"] = "Payment record deleted.";
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Receipt No. {payment.Id:D5} voided. It no longer counts towards any total.";
+        }
 
         return RedirectToAction(nameof(Student), new { id = payment.StudentId });
     }
@@ -171,7 +193,7 @@ public class PaymentsController : Controller
     {
         var fee = await _context.Students
             .Where(s => s.Id == studentId)
-            .Select(s => s.Batch!.MonthlyFee)
+            .Select(s => s.SchoolClass!.MonthlyFee)
             .FirstOrDefaultAsync();
 
         var paid = await _context.Payments
@@ -186,12 +208,11 @@ public class PaymentsController : Controller
         ViewBag.Methods = Methods;
 
         ViewBag.Students = await _context.Students
-            .Include(s => s.Batch)
+            .Include(s => s.SchoolClass)
             .OrderBy(s => s.FullName)
             .ToListAsync();
     }
 
-    private static DateOnly FirstOfMonth(DateOnly date) => new(date.Year, date.Month, 1);
 
     // <input type="month"> posts "2026-09"; our own links pass "2026-09-01". Accept both,
     // and never let a junk query string throw — fall back to the current month.
@@ -202,7 +223,7 @@ public class PaymentsController : Controller
             : value.Length == 7 ? value + "-01" : value;
 
         return DateOnly.TryParse(text, CultureInfo.InvariantCulture, out var parsed)
-            ? FirstOfMonth(parsed)
-            : FirstOfMonth(DateOnly.FromDateTime(DateTime.Today));
+            ? Clock.FirstOf(parsed)
+            : Clock.ThisMonth;
     }
 }

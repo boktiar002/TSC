@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Add Student";
-    var batches = (IEnumerable<TSC.Models.Batch>)ViewBag.Batches;
+    var schoolClasses = (IEnumerable<TSC.Models.SchoolClass>)ViewBag.SchoolClasses;
 }
 
 <h1>Add Student</h1>
@@ -32,24 +32,24 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="ClassLevel" class="form-label">Class</label>
-                    <select asp-for="ClassLevel" class="form-select">
-                        <option value="">-- Select Class --</option>
-                        <option value="2">Class 2</option>
-                        <option value="3">Class 3</option>
-                        <option value="4">Class 4</option>
-                        <option value="5">Class 5</option>
+                    <label asp-for="Batch" class="form-label">Batch</label>
+                    <select asp-for="Batch" class="form-select">
+                        <option value="">-- Select Batch --</option>
+                        @foreach (var batch in Student.Batches)
+                        {
+                            <option value="@batch">@batch</option>
+                        }
                     </select>
-                    <span asp-validation-for="ClassLevel" class="text-danger"></span>
+                    <span asp-validation-for="Batch" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label asp-for="BatchId" class="form-label"></label>
-                    <select asp-for="BatchId" class="form-select"
-                            asp-items="@(new SelectList(batches, "Id", "Name"))">
-                        <option value="">-- Select Batch --</option>
+                    <label asp-for="SchoolClassId" class="form-label"></label>
+                    <select asp-for="SchoolClassId" class="form-select"
+                            asp-items="@(new SelectList(schoolClasses, "Id", "Name"))">
+                        <option value="">-- Select Class --</option>
                     </select>
-                    <span asp-validation-for="BatchId" class="text-danger"></span>
+                    <span asp-validation-for="SchoolClassId" class="text-danger"></span>
                 </div>
             </div>
 

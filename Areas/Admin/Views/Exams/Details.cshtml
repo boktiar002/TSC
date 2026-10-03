@@ -11,7 +11,7 @@
     <div>
         <h1>@Model.Name</h1>
         <p class="text-muted mb-0">
-            @Model.Batch?.Name &middot; @Model.ExamDate.ToString("dd MMM yyyy") &middot;
+            @Model.SchoolClass?.Name &middot; @Model.ExamDate.ToString("dd MMM yyyy") &middot;
             @studentCount student@(studentCount == 1 ? "" : "s")
         </p>
     </div>
@@ -81,15 +81,15 @@
                 @if (!papers.Any())
                 {
                     <text>
-                        No subjects are assigned to @Model.Batch?.Name yet.
+                        No subjects are assigned to @Model.SchoolClass?.Name yet.
                         Assign them on the
-                        <a asp-controller="Batches" asp-action="Details" asp-route-id="@Model.BatchId">batch page</a>
+                        <a asp-controller="Classes" asp-action="Details" asp-route-id="@Model.SchoolClassId">class page</a>
                         first.
                     </text>
                 }
                 else
                 {
-                    <text>Every subject taught to this batch is already on the exam.</text>
+                    <text>Every subject taught to this class is already on the exam.</text>
                 }
             </p>
         }

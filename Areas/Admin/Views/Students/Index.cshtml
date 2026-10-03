@@ -4,11 +4,9 @@
     var archived = (bool)ViewBag.Archived;
     var archivedCount = (int)ViewBag.ArchivedCount;
     var query = (string?)ViewBag.Query;
-    var batchId = (int?)ViewBag.BatchId;
-    var classLevel = (string?)ViewBag.ClassLevel;
-    var batches = (List<TSC.Models.Batch>)ViewBag.Batches;
-    var classLevels = (List<string>)ViewBag.ClassLevels;
-    var filtered = !string.IsNullOrWhiteSpace(query) || batchId > 0 || !string.IsNullOrWhiteSpace(classLevel);
+    var schoolClassId = (int?)ViewBag.SchoolClassId;
+    var schoolClasses = (List<TSC.Models.SchoolClass>)ViewBag.SchoolClasses;
+    var filtered = !string.IsNullOrWhiteSpace(query) || schoolClassId > 0;
 
     ViewData["Title"] = archived ? "Archived Students" : "Students";
 }
@@ -60,23 +58,12 @@
             </div>
 
             <div class="col-md-3">
-                <label class="form-label" for="batchId">Batch</label>
-                <select class="form-select" id="batchId" name="batchId">
-                    <option value="">All batches</option>
-                    @foreach (var b in batches)
+                <label class="form-label" for="schoolClassId">Class</label>
+                <select class="form-select" id="schoolClassId" name="schoolClassId">
+                    <option value="">All classes</option>
+                    @foreach (var b in schoolClasses)
                     {
-                        <option value="@b.Id" selected="@(b.Id == batchId)">@b.Name</option>
-                    }
-                </select>
-            </div>
-
-            <div class="col-md-2">
-                <label class="form-label" for="classLevel">Class</label>
-                <select class="form-select" id="classLevel" name="classLevel">
-                    <option value="">All</option>
-                    @foreach (var c in classLevels)
-                    {
-                        <option value="@c" selected="@(c == classLevel)">Class @c</option>
+                        <option value="@b.Id" selected="@(b.Id == schoolClassId)">@b.Name</option>
                     }
                 </select>
             </div>
@@ -157,11 +144,18 @@
                                 </td>
 
                                 <td>
-                                    Class @student.ClassLevel
+                                    @student.SchoolClass?.Name
                                 </td>
 
                                 <td>
-                                    @student.Batch?.Name
+                                    @if (string.IsNullOrWhiteSpace(student.Batch))
+                                    {
+                                        <span class="text-muted" title="No batch set">&mdash;</span>
+                                    }
+                                    else
+                                    {
+                                        @student.Batch
+                                    }
                                 </td>
 
                                 <td>

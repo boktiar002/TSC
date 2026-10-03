@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Create Exam";
-    var batches = (IEnumerable<TSC.Models.Batch>)ViewBag.Batches;
+    var schoolClasses = (IEnumerable<TSC.Models.SchoolClass>)ViewBag.SchoolClasses;
 }
 
 <h1>Create Exam</h1>
@@ -22,12 +22,12 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="BatchId" class="form-label"></label>
-                <select asp-for="BatchId" class="form-select"
-                        asp-items="@(new SelectList(batches, "Id", "Name"))">
-                    <option value="">-- Select Batch --</option>
+                <label asp-for="SchoolClassId" class="form-label"></label>
+                <select asp-for="SchoolClassId" class="form-select"
+                        asp-items="@(new SelectList(schoolClasses, "Id", "Name"))">
+                    <option value="">-- Select Class --</option>
                 </select>
-                <span asp-validation-for="BatchId" class="text-danger"></span>
+                <span asp-validation-for="SchoolClassId" class="text-danger"></span>
             </div>
 
             <div class="mb-3">

@@ -24,88 +24,88 @@ public class HomeController : Controller
         if (me == null)
             return View("NotLinked");
 
-        var batchIds = me.BatchSubjects.Select(bs => bs.BatchId).Distinct().ToList();
+        var schoolClassIds = me.ClassSubjects.Select(bs => bs.SchoolClassId).Distinct().ToList();
 
-        ViewBag.StudentCount = await _context.Students.CountAsync(s => batchIds.Contains(s.BatchId));
-        ViewBag.BatchCount = batchIds.Count;
+        ViewBag.StudentCount = await _context.Students.CountAsync(s => schoolClassIds.Contains(s.SchoolClassId));
+        ViewBag.SchoolClassCount = schoolClassIds.Count;
         ViewBag.Notices = await ActiveNoticesAsync();
 
         return View(me);
     }
 
-    // GET: /Teacher/Home/Batch/3  -- roster of one batch this teacher actually teaches
-    public async Task<IActionResult> Batch(int id)
+    // GET: /Teacher/Home/Class/3  -- roster of one class this teacher actually teaches
+    public async Task<IActionResult> Class(int id)
     {
         var me = await MeAsync();
 
         if (me == null)
             return View("NotLinked");
 
-        if (me.BatchSubjects.All(bs => bs.BatchId != id))
+        if (me.ClassSubjects.All(bs => bs.SchoolClassId != id))
             return Forbid();
 
-        var batch = await _context.Batches.FirstOrDefaultAsync(b => b.Id == id);
+        var schoolClass = await _context.SchoolClasses.FirstOrDefaultAsync(b => b.Id == id);
 
-        if (batch == null)
+        if (schoolClass == null)
             return NotFound();
 
-        ViewBag.Batch = batch;
-        ViewBag.MySubjects = me.BatchSubjects
-            .Where(bs => bs.BatchId == id)
+        ViewBag.SchoolClass = schoolClass;
+        ViewBag.MySubjects = me.ClassSubjects
+            .Where(bs => bs.SchoolClassId == id)
             .Select(bs => bs.Subject!)
             .OrderBy(s => s.Name)
             .ToList();
 
         return View(await _context.Students
-            .Where(s => s.BatchId == id)
+            .Where(s => s.SchoolClassId == id)
             .OrderBy(s => s.FullName)
             .ToListAsync());
     }
 
-    // GET: /Teacher/Home/Attendance?batchId=3&date=2026-09-29
-    // The same tap sheet the office uses, limited to the batches this teacher teaches.
-    public async Task<IActionResult> Attendance(int? batchId, DateOnly? date)
+    // GET: /Teacher/Home/Attendance?schoolClassId=3&date=2026-09-29
+    // The same tap sheet the office uses, limited to the classes this teacher teaches.
+    public async Task<IActionResult> Attendance(int? schoolClassId, DateOnly? date)
     {
         var me = await MeAsync();
 
         if (me == null)
             return View("NotLinked");
 
-        var mine = MyBatches(me);
-        var day = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var mine = MyClasses(me);
+        var day = date ?? Clock.Today;
 
-        // One batch and no choice to make: open it.
-        batchId ??= mine.Count == 1 ? mine[0].Id : null;
+        // One class and no choice to make: open it.
+        schoolClassId ??= mine.Count == 1 ? mine[0].Id : null;
 
-        ViewBag.Batches = mine;
-        ViewBag.BatchId = batchId;
+        ViewBag.SchoolClasses = mine;
+        ViewBag.SchoolClassId = schoolClassId;
         ViewBag.Date = day;
 
-        if (batchId == null)
+        if (schoolClassId == null)
             return View((RollCall?)null);
 
-        if (mine.All(b => b.Id != batchId))
+        if (mine.All(b => b.Id != schoolClassId))
             return Forbid();
 
-        ViewBag.RollCallTitle = mine.First(b => b.Id == batchId).Name;
+        ViewBag.RollCallTitle = mine.First(b => b.Id == schoolClassId).Name;
 
-        return View(await RollCallBook.LoadAsync(_context, batchId.Value, day));
+        return View(await RollCallBook.LoadAsync(_context, schoolClassId.Value, day));
     }
 
     // POST: /Teacher/Home/Toggle
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Toggle(int studentId, int batchId, DateOnly date)
+    public async Task<IActionResult> Toggle(int studentId, int schoolClassId, DateOnly date)
     {
         var me = await MeAsync();
 
         if (me == null)
             return View("NotLinked");
 
-        if (MyBatches(me).All(b => b.Id != batchId))
+        if (MyClasses(me).All(b => b.Id != schoolClassId))
             return Forbid();
 
-        var tap = await RollCallBook.ToggleAsync(_context, batchId, studentId, date);
+        var tap = await RollCallBook.ToggleAsync(_context, schoolClassId, studentId, date);
 
         if (tap == null)
             return NotFound();
@@ -113,32 +113,32 @@ public class HomeController : Controller
         if (Request.Headers.XRequestedWith == "XMLHttpRequest")
             return Json(new { present = tap.Value.Present, presentCount = tap.Value.PresentCount, total = tap.Value.Total });
 
-        return RedirectToAction(nameof(Attendance), new { batchId, date = date.ToString("yyyy-MM-dd") });
+        return RedirectToAction(nameof(Attendance), new { schoolClassId, date = date.ToString("yyyy-MM-dd") });
     }
 
-    // GET: /Teacher/Home/Progress?batchId=3  -- read-only version of the office's merit sheet
-    public async Task<IActionResult> Progress(int? batchId, int[]? examIds)
+    // GET: /Teacher/Home/Progress?schoolClassId=3  -- read-only version of the office's merit sheet
+    public async Task<IActionResult> Progress(int? schoolClassId, int[]? examIds)
     {
         var me = await MeAsync();
 
         if (me == null)
             return View("NotLinked");
 
-        var mine = MyBatches(me);
+        var mine = MyClasses(me);
 
-        batchId ??= mine.FirstOrDefault()?.Id;
+        schoolClassId ??= mine.FirstOrDefault()?.Id;
 
-        ViewBag.Batches = mine;
-        ViewBag.BatchId = batchId;
+        ViewBag.SchoolClasses = mine;
+        ViewBag.SchoolClassId = schoolClassId;
 
-        if (batchId == null)
+        if (schoolClassId == null)
             return View(new List<ProgressRow>());
 
-        if (mine.All(b => b.Id != batchId))
+        if (mine.All(b => b.Id != schoolClassId))
             return Forbid();
 
         var exams = await _context.Exams
-            .Where(e => e.BatchId == batchId)
+            .Where(e => e.SchoolClassId == schoolClassId)
             .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
             .OrderBy(e => e.ExamDate)
             .ToListAsync();
@@ -154,7 +154,7 @@ public class HomeController : Controller
         ViewBag.Columns = columns;
         ViewBag.FullMarks = columns.Sum(c => c.Paper.FullMarks);
 
-        return View(await Ranking.RankAsync(_context, batchId.Value, chosen, columns));
+        return View(await Ranking.RankAsync(_context, schoolClassId.Value, chosen, columns));
     }
 
     // GET: /Teacher/Home/StudentAttendance/5  -- one of my students' record
@@ -166,13 +166,13 @@ public class HomeController : Controller
             return View("NotLinked");
 
         var student = await _context.Students
-            .Include(s => s.Batch)
+            .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
             return NotFound();
 
-        if (MyBatches(me).All(b => b.Id != student.BatchId))
+        if (MyClasses(me).All(b => b.Id != student.SchoolClassId))
             return Forbid();
 
         ViewBag.Student = student;
@@ -196,7 +196,7 @@ public class HomeController : Controller
         if (exam == null)
             return NotFound();
 
-        // A teacher may only touch papers for the (batch, subject) pairs assigned to them.
+        // A teacher may only touch papers for the (class, subject) pairs assigned to them.
         var mine = MyPapers(me, exam);
 
         if (mine.Count == 0)
@@ -217,7 +217,7 @@ public class HomeController : Controller
             .ToDictionaryAsync(m => m.StudentId, m => m.Score);
 
         return View(await _context.Students
-            .Where(s => s.BatchId == exam.BatchId)
+            .Where(s => s.SchoolClassId == exam.SchoolClassId)
             .OrderBy(s => s.FullName)
             .ToListAsync());
     }
@@ -259,11 +259,11 @@ public class HomeController : Controller
         if (me == null)
             return View("NotLinked");
 
-        var batchIds = me.BatchSubjects.Select(bs => bs.BatchId).Distinct().ToList();
+        var schoolClassIds = me.ClassSubjects.Select(bs => bs.SchoolClassId).Distinct().ToList();
 
         var exams = await _context.Exams
-            .Where(e => batchIds.Contains(e.BatchId))
-            .Include(e => e.Batch)
+            .Where(e => schoolClassIds.Contains(e.SchoolClassId))
+            .Include(e => e.SchoolClass)
             .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
             .OrderByDescending(e => e.ExamDate)
             .ToListAsync();
@@ -276,19 +276,19 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Notices() => View(await ActiveNoticesAsync());
 
-    // The batches this teacher is assigned to, in name order and without repeats.
-    private static List<Batch> MyBatches(Teacher me) =>
-        me.BatchSubjects
-            .Select(bs => bs.Batch!)
+    // The classes this teacher is assigned to, in name order and without repeats.
+    private static List<SchoolClass> MyClasses(Teacher me) =>
+        me.ClassSubjects
+            .Select(bs => bs.SchoolClass!)
             .DistinctBy(b => b.Id)
             .OrderBy(b => b.Name)
             .ToList();
 
-    // The (batch, subject) pairs this teacher is assigned, intersected with the exam's papers.
+    // The (class, subject) pairs this teacher is assigned, intersected with the exam's papers.
     private static List<ExamSubject> MyPapers(Teacher me, Exam exam)
     {
-        var mySubjectIds = me.BatchSubjects
-            .Where(bs => bs.BatchId == exam.BatchId)
+        var mySubjectIds = me.ClassSubjects
+            .Where(bs => bs.SchoolClassId == exam.SchoolClassId)
             .Select(bs => bs.SubjectId)
             .ToHashSet();
 
@@ -297,7 +297,7 @@ public class HomeController : Controller
 
     private Task<Exam?> LoadExamAsync(int id) =>
         _context.Exams
-            .Include(e => e.Batch)
+            .Include(e => e.SchoolClass)
             .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
             .FirstOrDefaultAsync(e => e.Id == id);
 
@@ -306,8 +306,8 @@ public class HomeController : Controller
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
         return _context.Teachers
-            .Include(t => t.BatchSubjects).ThenInclude(bs => bs.Batch)
-            .Include(t => t.BatchSubjects).ThenInclude(bs => bs.Subject)
+            .Include(t => t.ClassSubjects).ThenInclude(bs => bs.SchoolClass)
+            .Include(t => t.ClassSubjects).ThenInclude(bs => bs.Subject)
             .FirstOrDefaultAsync(t => t.UserId == userId);
     }
 

@@ -34,7 +34,7 @@
 
             <form asp-action="Toggle" method="post" class="tsc-roll-form">
                 <input type="hidden" name="studentId" value="@student.Id" />
-                <input type="hidden" name="batchId" value="@Model.BatchId" />
+                <input type="hidden" name="schoolClassId" value="@Model.SchoolClassId" />
                 <input type="hidden" name="date" value="@Model.Date.ToString("yyyy-MM-dd")" />
 
                 <button type="submit" class="btn tsc-roll-btn @(isPresent ? "btn-success" : "btn-outline-secondary")">

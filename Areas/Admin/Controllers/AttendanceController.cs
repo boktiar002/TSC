@@ -17,24 +17,24 @@ public class AttendanceController : Controller
         _context = context;
     }
 
-    // GET: /Admin/Attendance?batchId=1&date=2026-09-28  -- the daily sheet
-    public async Task<IActionResult> Index(int? batchId, DateOnly? date)
+    // GET: /Admin/Attendance?schoolClassId=1&date=2026-09-28  -- the daily sheet
+    public async Task<IActionResult> Index(int? schoolClassId, DateOnly? date)
     {
-        var day = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var day = date ?? Clock.Today;
 
-        ViewBag.Batches = await _context.Batches.OrderBy(b => b.Name).ToListAsync();
-        ViewBag.BatchId = batchId;
+        ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();
+        ViewBag.SchoolClassId = schoolClassId;
         ViewBag.Date = day;
 
-        if (batchId == null)
+        if (schoolClassId == null)
             return View((RollCall?)null);
 
-        ViewBag.RollCallTitle = await _context.Batches
-            .Where(b => b.Id == batchId)
+        ViewBag.RollCallTitle = await _context.SchoolClasses
+            .Where(b => b.Id == schoolClassId)
             .Select(b => b.Name)
             .FirstOrDefaultAsync();
 
-        return View(await RollCallBook.LoadAsync(_context, batchId.Value, day));
+        return View(await RollCallBook.LoadAsync(_context, schoolClassId.Value, day));
     }
 
     // POST: /Admin/Attendance/Toggle
@@ -43,9 +43,9 @@ public class AttendanceController : Controller
     // classroom and may never come back to the page.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Toggle(int studentId, int batchId, DateOnly date)
+    public async Task<IActionResult> Toggle(int studentId, int schoolClassId, DateOnly date)
     {
-        var tap = await RollCallBook.ToggleAsync(_context, batchId, studentId, date);
+        var tap = await RollCallBook.ToggleAsync(_context, schoolClassId, studentId, date);
 
         if (tap == null)
             return NotFound();
@@ -53,29 +53,29 @@ public class AttendanceController : Controller
         if (Request.Headers.XRequestedWith == "XMLHttpRequest")
             return Json(new { present = tap.Value.Present, presentCount = tap.Value.PresentCount, total = tap.Value.Total });
 
-        return RedirectToAction(nameof(Index), new { batchId, date = date.ToString("yyyy-MM-dd") });
+        return RedirectToAction(nameof(Index), new { schoolClassId, date = date.ToString("yyyy-MM-dd") });
     }
 
-    // GET: /Admin/Attendance/Followup?batchId=1&days=30&threshold=75
+    // GET: /Admin/Attendance/Followup?schoolClassId=1&days=30&threshold=75
     // The call list: who has been slipping, so the office rings the guardian before a term's
     // worth of absence turns into a student who quietly stopped coming.
-    public async Task<IActionResult> Followup(int? batchId, int days = 30, int threshold = 75)
+    public async Task<IActionResult> Followup(int? schoolClassId, int days = 30, int threshold = 75)
     {
         days = Math.Clamp(days, 7, 365);
         threshold = Math.Clamp(threshold, 1, 100);
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = Clock.Today;
         var from = today.AddDays(-days);
 
-        ViewBag.Batches = await _context.Batches.OrderBy(b => b.Name).ToListAsync();
-        ViewBag.BatchId = batchId;
+        ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();
+        ViewBag.SchoolClassId = schoolClassId;
         ViewBag.Days = days;
         ViewBag.Threshold = threshold;
         ViewBag.From = from;
 
         var students = await _context.Students
-            .Include(s => s.Batch)
-            .Where(s => batchId == null || s.BatchId == batchId)
+            .Include(s => s.SchoolClass)
+            .Where(s => schoolClassId == null || s.SchoolClassId == schoolClassId)
             .ToListAsync();
 
         var studentIds = students.Select(s => s.Id).ToList();
@@ -131,10 +131,12 @@ public class AttendanceController : Controller
     }
 
     // GET: /Admin/Attendance/Student/5  -- one student's record
+    // Archived students included, same as their fee history.
     public async Task<IActionResult> Student(int id)
     {
         var student = await _context.Students
-            .Include(s => s.Batch)
+            .IgnoreQueryFilters()
+            .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
@@ -143,6 +145,7 @@ public class AttendanceController : Controller
         ViewBag.Student = student;
 
         return View(await _context.Attendances
+            .IgnoreQueryFilters()
             .Where(a => a.StudentId == id)
             .OrderByDescending(a => a.Date)
             .ToListAsync());

@@ -26,8 +26,8 @@ public class HomeController : Controller
         if (me == null)
             return View("NotLinked");
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        var thisMonth = new DateOnly(today.Year, today.Month, 1);
+        var today = Clock.Today;
+        var thisMonth = Clock.FirstOf(today);
 
         var attendance = await _context.Attendances
             .Where(a => a.StudentId == me.Id)
@@ -39,7 +39,7 @@ public class HomeController : Controller
 
         ViewBag.DaysRecorded = attendance.Count;
 
-        var fee = me.Batch?.MonthlyFee ?? 0m;
+        var fee = me.SchoolClass?.MonthlyFee ?? 0m;
 
         var paidThisMonth = await _context.Payments
             .Where(p => p.StudentId == me.Id && p.ForMonth == thisMonth)
@@ -129,7 +129,7 @@ public class HomeController : Controller
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
         return _context.Students
-            .Include(s => s.Batch)
+            .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.UserId == userId);
     }
 
