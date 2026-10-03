@@ -1,0 +1,55 @@
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-start gap-2" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
+        <div>@TempData["Success"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-start gap-2" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["NewLogin"] is string newLogin && newLogin.Contains('|'))
+{
+    var parts = newLogin.Split('|', 2);
+
+    <div class="tsc-newlogin" role="alert">
+        <div class="tsc-newlogin-head">
+            <i class="bi bi-key-fill"></i>
+            <div>
+                <strong>Login ready.</strong>
+                Hand these to the student or guardian. You can read them back later from
+                <a asp-area="Admin" asp-controller="Logins" asp-action="Index">Portal logins</a>.
+            </div>
+        </div>
+
+        <div class="tsc-cred-fields">
+            <div class="tsc-cred-field">
+                <span class="tsc-cred-label">Login ID</span>
+                <code id="tscNewId">@parts[0]</code>
+                <button type="button" class="tsc-icon-btn" data-copy="#tscNewId" aria-label="Copy login ID">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+            </div>
+
+            <div class="tsc-cred-field">
+                <span class="tsc-cred-label">Password</span>
+                <code id="tscNewPassword">@parts[1]</code>
+                <button type="button" class="tsc-icon-btn" data-copy="#tscNewPassword" aria-label="Copy password">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="small mt-2 opacity-75">
+            The password is case-sensitive and contains one symbol. Copy it rather than retyping it.
+        </div>
+    </div>
+}

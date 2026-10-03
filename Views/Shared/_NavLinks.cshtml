@@ -1,0 +1,38 @@
+@using TSC.Models
+@model IReadOnlyList<NavItem>
+
+@{
+    var route = ViewContext.RouteData.Values;
+    var area = route["area"]?.ToString() ?? "";
+    var controller = route["controller"]?.ToString() ?? "";
+    var action = route["action"]?.ToString() ?? "";
+
+    // An exact area/controller/action hit wins. Failing that -- /Students/Details, /Exams/Marks
+    // and every other sub-page -- the first item on the same controller lights up, so a child
+    // page never leaves the whole menu looking unselected.
+    var exact = Model.FirstOrDefault(i =>
+        i.Area == area && i.Controller == controller && i.Action == action);
+
+    var current = exact ?? Model.FirstOrDefault(i => i.Area == area && i.Controller == controller);
+
+    // Headings only earn their space when the menu is a merge of two roles.
+    var showSections = NavMenu.IsMerged(Model);
+
+    // Not named `section`: `@section` is a Razor directive and the renderer trips over it.
+    var heading = "";
+}
+
+@foreach (var item in Model)
+{
+    if (showSections && item.Section != heading)
+    {
+        heading = item.Section;
+        <div class="tsc-nav-section">@heading</div>
+    }
+
+    <a class="tsc-nav-link @(item == current ? "active" : "")"
+       asp-area="@item.Area" asp-controller="@item.Controller" asp-action="@item.Action">
+        <i class="bi @item.Icon"></i>
+        <span>@item.Label</span>
+    </a>
+}

@@ -1,0 +1,8 @@
+@using Microsoft.AspNetCore.Identity
+@using TSC
+@using TSC.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@* Without this file the app-local Identity pages compile with no tag helpers at all, so
+   asp-for / asp-page land in the HTML as literal attributes and the sign-in form posts
+   nothing. The Default UI's own pages carry their own imports; ours do not inherit them. *@

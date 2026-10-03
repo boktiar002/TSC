@@ -1,0 +1,160 @@
+@model List<TSC.Areas.Admin.Controllers.LoginsController.Row>
+
+@{
+    ViewData["Title"] = "Portal logins";
+
+    var role = ViewBag.Role as string;
+    var query = ViewBag.Query as string;
+}
+
+<div class="tsc-page-head">
+    <div>
+        <h1 class="mb-1">Portal logins</h1>
+        <p class="text-muted mb-0">
+            Every login ID and password the centre has issued. Read one out at the counter
+            instead of resetting it.
+        </p>
+    </div>
+
+    <button type="button" class="btn btn-outline-primary" id="tscRevealAll">
+        <i class="bi bi-eye me-1"></i>Show all passwords
+    </button>
+</div>
+
+<div class="alert alert-info d-flex align-items-start gap-2 no-print">
+    <i class="bi bi-info-circle-fill mt-1"></i>
+    <div class="small">
+        Passwords are stored so they can be read back here. Anyone signed in as an admin can
+        see them &mdash; keep this screen off a shared display.
+    </div>
+</div>
+
+<form method="get" class="tsc-filterbar no-print">
+    <div class="tsc-search">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="@query" class="form-control"
+               placeholder="Search name or login ID" />
+    </div>
+
+    <div class="tsc-chips">
+        <a class="tsc-chip @(role == null ? "active" : "")" asp-action="Index" asp-route-q="@query">
+            All
+        </a>
+        <a class="tsc-chip @(role == "Student" ? "active" : "")"
+           asp-action="Index" asp-route-role="Student" asp-route-q="@query">
+            Students <span class="tsc-chip-count">@ViewBag.StudentCount</span>
+        </a>
+        <a class="tsc-chip @(role == "Teacher" ? "active" : "")"
+           asp-action="Index" asp-route-role="Teacher" asp-route-q="@query">
+            Teachers <span class="tsc-chip-count">@ViewBag.TeacherCount</span>
+        </a>
+    </div>
+
+    @if (role != null)
+    {
+        <input type="hidden" name="role" value="@role" />
+    }
+
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+@if (Model.Count == 0)
+{
+    <div class="tsc-empty">
+        <i class="bi bi-key"></i>
+        <h2 class="h5">No logins yet</h2>
+        <p class="text-muted mb-3">
+            Open a student or teacher and choose <strong>Create login</strong>. Their ID becomes
+            their login ID.
+        </p>
+        <a asp-controller="Students" asp-action="Index" class="btn btn-primary">Go to students</a>
+    </div>
+}
+else
+{
+    <div class="tsc-cred-list">
+        @foreach (var row in Model)
+        {
+            var id = $"cred{row.Role}{row.StudentId ?? row.TeacherId}";
+
+            <div class="tsc-cred">
+
+                <div class="tsc-cred-who">
+                    <span class="tsc-cred-avatar @(row.Role == "Teacher" ? "is-teacher" : "")">
+                        @(row.Name.Length > 0 ? char.ToUpperInvariant(row.Name[0]).ToString() : "?")
+                    </span>
+                    <div class="min-w-0">
+                        <div class="tsc-cred-name">@row.Name</div>
+                        <div class="tsc-cred-meta">
+                            @row.Role@(string.IsNullOrWhiteSpace(row.ClassName) ? "" : " · " + row.ClassName)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tsc-cred-fields">
+                    <div class="tsc-cred-field">
+                        <span class="tsc-cred-label">Login ID</span>
+                        <code id="@(id)Id">@row.LoginId</code>
+                        <button type="button" class="tsc-icon-btn" data-copy="#@(id)Id"
+                                aria-label="Copy login ID">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+
+                    <div class="tsc-cred-field">
+                        <span class="tsc-cred-label">Password</span>
+
+                        @if (row.Password == null)
+                        {
+                            @* Either the account predates passwords being stored, or its owner
+                               has since changed it. Both mean the same thing to the office. *@
+                            <span class="text-muted small">Not stored &mdash; issue a new one</span>
+                        }
+                        else
+                        {
+                            <code class="tsc-secret" id="@(id)Pw" data-secret="@row.Password">••••••••</code>
+                            <button type="button" class="tsc-icon-btn" data-reveal="#@(id)Pw"
+                                    aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button type="button" class="tsc-icon-btn" data-copy-secret="#@(id)Pw"
+                                    aria-label="Copy password">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="tsc-cred-actions no-print">
+                    @if (row.StudentId != null)
+                    {
+                        <a asp-controller="Students" asp-action="Details" asp-route-id="@row.StudentId"
+                           class="btn btn-sm btn-outline-secondary">Open</a>
+
+                        <form asp-controller="Students" asp-action="ResetLogin" asp-route-id="@row.StudentId"
+                              method="post" class="d-inline"
+                              onsubmit="return confirm('Issue a new password for @row.Name? The old one stops working.');">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-repeat"></i><span class="d-none d-sm-inline ms-1">New</span>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-controller="Teachers" asp-action="Index"
+                           class="btn btn-sm btn-outline-secondary">Open</a>
+
+                        <form asp-controller="Teachers" asp-action="ResetLogin" asp-route-id="@row.TeacherId"
+                              method="post" class="d-inline"
+                              onsubmit="return confirm('Issue a new password for @row.Name? The old one stops working.');">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-repeat"></i><span class="d-none d-sm-inline ms-1">New</span>
+                            </button>
+                        </form>
+                    }
+                </div>
+
+            </div>
+        }
+    </div>
+}

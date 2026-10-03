@@ -1,0 +1,75 @@
+@page
+@model TSC.Areas.Identity.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="tsc-auth">
+    <div class="tsc-auth-card">
+
+        <div class="tsc-auth-brand">
+            <span class="tsc-auth-logo"><img src="~/img/tsc-logo.png" alt="" /></span>
+            <div>
+                <div class="tsc-auth-title">Teacher Student Care</div>
+                <div class="tsc-auth-sub">Student &amp; teacher portal</div>
+            </div>
+        </div>
+
+        <h1 class="h4 mb-1">Sign in</h1>
+        <p class="text-muted small mb-4">
+            Use the login ID the centre gave you &mdash; a student signs in with their
+            Student&nbsp;ID.
+        </p>
+
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 px-3 small"
+                 role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Input.LoginId" class="form-label"></label>
+                <div class="input-group tsc-input-group">
+                    <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                    <input asp-for="Input.LoginId" class="form-control form-control-lg"
+                           autocomplete="username" autocapitalize="characters"
+                           autocorrect="off" spellcheck="false"
+                           placeholder="e.g. TSC-0042" autofocus />
+                </div>
+                <span asp-validation-for="Input.LoginId" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Password" class="form-label"></label>
+                <div class="input-group tsc-input-group">
+                    <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                    <input asp-for="Input.Password" class="form-control form-control-lg"
+                           autocomplete="current-password" id="tscPassword"
+                           placeholder="Password" />
+                    <button class="btn btn-outline-secondary" type="button"
+                            data-toggle-password="#tscPassword" aria-label="Show password">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Input.Password" class="text-danger small"></span>
+            </div>
+
+            <div class="form-check mb-4">
+                <input asp-for="Input.RememberMe" class="form-check-input" />
+                <label asp-for="Input.RememberMe" class="form-check-label"></label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Sign in
+            </button>
+        </form>
+
+        <p class="text-muted small text-center mt-4 mb-0">
+            Forgotten your password? The centre office can issue a new one.
+        </p>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
