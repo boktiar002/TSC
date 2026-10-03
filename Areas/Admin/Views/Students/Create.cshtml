@@ -32,15 +32,15 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="ClassLevel" class="form-label">Class</label>
-                    <select asp-for="ClassLevel" class="form-select">
-                        <option value="">-- Select Class --</option>
-                        <option value="2">Class 2</option>
-                        <option value="3">Class 3</option>
-                        <option value="4">Class 4</option>
-                        <option value="5">Class 5</option>
+                    <label asp-for="Batch" class="form-label">Batch</label>
+                    <select asp-for="Batch" class="form-select">
+                        <option value="">-- Select Batch --</option>
+                        @foreach (var batch in Student.Batches)
+                        {
+                            <option value="@batch">@batch</option>
+                        }
                     </select>
-                    <span asp-validation-for="ClassLevel" class="text-danger"></span>
+                    <span asp-validation-for="Batch" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-6 mb-3">

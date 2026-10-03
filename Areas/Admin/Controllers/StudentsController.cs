@@ -105,9 +105,9 @@ public class StudentsController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
-    // GET: /Admin/Students?q=&schoolClassId=&classLevel=
+    // GET: /Admin/Students?q=&schoolClassId=
     public async Task<IActionResult> Index(bool archived = false, string? q = null,
-        int? schoolClassId = null, string? classLevel = null)
+        int? schoolClassId = null)
     {
         var query = _context.Students.AsQueryable();
 
@@ -132,9 +132,6 @@ public class StudentsController : Controller
         if (schoolClassId is > 0)
             query = query.Where(s => s.SchoolClassId == schoolClassId);
 
-        if (!string.IsNullOrWhiteSpace(classLevel))
-            query = query.Where(s => s.ClassLevel == classLevel);
-
         ViewBag.Archived = archived;
         ViewBag.ArchivedCount = await _context.Students
             .IgnoreQueryFilters()
@@ -142,14 +139,7 @@ public class StudentsController : Controller
 
         ViewBag.Query = search;
         ViewBag.SchoolClassId = schoolClassId;
-        ViewBag.ClassLevel = classLevel;
         ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();
-        ViewBag.ClassLevels = await _context.Students
-            .Where(s => s.ClassLevel != null)
-            .Select(s => s.ClassLevel!)
-            .Distinct()
-            .OrderBy(c => c)
-            .ToListAsync();
 
         return View(await query
             .Include(s => s.SchoolClass)
@@ -158,12 +148,15 @@ public class StudentsController : Controller
     }
 
     // GET: /Admin/Students/Details/5
+    // IgnoreQueryFilters: an archived student is still readable here. Keeping their marks,
+    // attendance and fees is the whole reason they were archived rather than deleted.
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null)
             return NotFound();
 
         var student = await _context.Students
+            .IgnoreQueryFilters()
             .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -214,6 +207,7 @@ public class StudentsController : Controller
             return NotFound();
 
         var student = await _context.Students
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
@@ -242,6 +236,7 @@ public class StudentsController : Controller
         }
 
         var existingStudent = await _context.Students
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (existingStudent == null)
@@ -249,7 +244,7 @@ public class StudentsController : Controller
 
         existingStudent.StudentId = student.StudentId;
         existingStudent.FullName = student.FullName;
-        existingStudent.ClassLevel = student.ClassLevel;
+        existingStudent.Batch = student.Batch;
         existingStudent.Phone = student.Phone;
         existingStudent.Email = student.Email;
         existingStudent.Address = student.Address;

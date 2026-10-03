@@ -60,6 +60,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // them back if an archive report ever needs the history.
         builder.Entity<Mark>().HasQueryFilter(m => m.Student!.IsActive);
         builder.Entity<Attendance>().HasQueryFilter(a => a.Student!.IsActive);
-        builder.Entity<Payment>().HasQueryFilter(p => p.Student!.IsActive);
+
+        // Payment carries two named filters so a caller can drop one without the other: the
+        // fee ledger shows voided rows struck through while every total still ignores them.
+        builder.Entity<Payment>().HasQueryFilter("Archived", p => p.Student!.IsActive);
+        builder.Entity<Payment>().HasQueryFilter("Voided", p => !p.IsVoided);
     }
 }

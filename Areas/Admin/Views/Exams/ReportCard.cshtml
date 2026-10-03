@@ -24,6 +24,7 @@
 
     string Place(int rank) => rank switch
     {
+        0 => "—", // unranked: an archived student, kept out of the live merit list
         1 => "1st", 2 => "2nd", 3 => "3rd", _ => $"{rank}th"
     };
 }
@@ -80,7 +81,7 @@
                 <div class="text-muted">Progress report @(chosen.Count == 1 ? $"— {chosen[0].Name}" : "")</div>
             </div>
             <div class="ms-auto text-end text-muted small">
-                Issued @DateTime.Today.ToString("dd MMM yyyy")
+                Issued @Clock.Today.ToString("dd MMM yyyy")
             </div>
         </div>
 
@@ -89,7 +90,7 @@
             <dd class="col-sm-4 mb-1"><strong>@student.FullName</strong> (@student.StudentId)</dd>
 
             <dt class="col-sm-2">Class &amp; batch</dt>
-            <dd class="col-sm-4 mb-1">Class @student.ClassLevel &middot; @student.SchoolClass?.Name</dd>
+            <dd class="col-sm-4 mb-1">@student.SchoolClass?.Name@(string.IsNullOrWhiteSpace(student.Batch) ? "" : " · " + student.Batch)</dd>
 
             <dt class="col-sm-2">Guardian</dt>
             <dd class="col-sm-4 mb-1">@(string.IsNullOrWhiteSpace(student.GuardianName) ? "—" : student.GuardianName)</dd>
@@ -165,7 +166,7 @@
                     <div class="border rounded-3 p-3 h-100">
                         <div class="text-muted small">Merit position</div>
                         <div class="fs-4 fw-semibold">@Place(Model.Rank)</div>
-                        <div class="text-muted small">of @classSize in the class</div>
+                        <div class="text-muted small">@(Model.Rank == 0 ? "archived — not in the class ranking" : $"of {classSize} in the class")</div>
                     </div>
                 </div>
 

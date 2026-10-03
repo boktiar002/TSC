@@ -36,7 +36,7 @@ public class ExamsController : Controller
     {
         await LoadSchoolClasses();
 
-        return View(new Exam { ExamDate = DateOnly.FromDateTime(DateTime.Today) });
+        return View(new Exam { ExamDate = Clock.Today });
     }
 
     // POST: /Admin/Exams/Create
@@ -255,6 +255,18 @@ public class ExamsController : Controller
         var schoolClasses = (List<SchoolClass>)ViewBag.SchoolClasses;
         schoolClassId ??= schoolClasses.FirstOrDefault()?.Id;
 
+        // No classes set up yet -- nothing to rank, and nothing to dereference.
+        if (schoolClassId == null)
+        {
+            ViewBag.SchoolClassId = null;
+            ViewBag.Exams = new List<Exam>();
+            ViewBag.Chosen = new List<Exam>();
+            ViewBag.Columns = new List<(Exam Exam, ExamSubject Paper)>();
+            ViewBag.FullMarks = 0m;
+
+            return View(new List<ProgressRow>());
+        }
+
         var exams = await _context.Exams
             .Where(e => e.SchoolClassId == schoolClassId)
             .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
@@ -267,7 +279,7 @@ public class ExamsController : Controller
             : exams;
 
         var columns = Ranking.PapersOf(chosen);
-        var rows = await Ranking.RankAsync(_context, schoolClassId!.Value, chosen, columns);
+        var rows = await Ranking.RankAsync(_context, schoolClassId.Value, chosen, columns);
         var fullMarks = columns.Sum(c => c.Paper.FullMarks);
 
         ViewBag.SchoolClassId = schoolClassId;
@@ -281,9 +293,12 @@ public class ExamsController : Controller
 
     // GET: /Admin/Exams/ReportCard/5?examIds=3&examIds=4
     // One student's sheet, laid out to be printed and sent home with them.
+    // Works for an archived student too: their marks, attendance and fees are kept, and the
+    // report card is how the office reads them back.
     public async Task<IActionResult> ReportCard(int id, int[]? examIds)
     {
         var student = await _context.Students
+            .IgnoreQueryFilters()
             .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -306,14 +321,17 @@ public class ExamsController : Controller
         var ranked = await Ranking.RankAsync(_context, student.SchoolClassId, chosen, columns);
 
         var attendance = await _context.Attendances
+            .IgnoreQueryFilters()
             .Where(a => a.StudentId == id)
             .GroupBy(a => a.StudentId)
             .Select(g => new { Days = g.Count(), Present = g.Count(a => a.IsPresent) })
             .FirstOrDefaultAsync();
 
-        var thisMonth = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, 1);
+        var thisMonth = Clock.ThisMonth;
 
         var paid = await _context.Payments
+            // Archived only: a voided receipt is not money the centre has.
+            .IgnoreQueryFilters(["Archived"])
             .Where(p => p.StudentId == id && p.ForMonth == thisMonth)
             .SumAsync(p => (decimal?)p.Amount) ?? 0m;
 
@@ -329,7 +347,11 @@ public class ExamsController : Controller
         ViewBag.MonthlyFee = student.SchoolClass?.MonthlyFee ?? 0m;
         ViewBag.PaidThisMonth = paid;
 
-        return View(ranked.First(r => r.Student.Id == id));
+        // An archived student is not in the live ranking, so work their line out on its own.
+        var row = ranked.FirstOrDefault(r => r.Student.Id == id)
+            ?? await Ranking.RowForAsync(_context, student, chosen, columns);
+
+        return View(row);
     }
 
     private async Task<Exam?> LoadExam(int? id) =>

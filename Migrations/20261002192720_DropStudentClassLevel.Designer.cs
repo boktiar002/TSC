@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TSC.Data;
@@ -11,9 +12,11 @@ using TSC.Data;
 namespace TSC.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261002192720_DropStudentClassLevel")]
+    partial class DropStudentClassLevel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -404,9 +407,6 @@ namespace TSC.Migrations
                     b.Property<DateOnly>("ForMonth")
                         .HasColumnType("date");
 
-                    b.Property<bool>("IsVoided")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Note")
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
@@ -420,12 +420,6 @@ namespace TSC.Migrations
 
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime?>("VoidedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("VoidedByUserId")
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

@@ -20,7 +20,7 @@ public class AttendanceController : Controller
     // GET: /Admin/Attendance?schoolClassId=1&date=2026-09-28  -- the daily sheet
     public async Task<IActionResult> Index(int? schoolClassId, DateOnly? date)
     {
-        var day = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var day = date ?? Clock.Today;
 
         ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();
         ViewBag.SchoolClassId = schoolClassId;
@@ -64,7 +64,7 @@ public class AttendanceController : Controller
         days = Math.Clamp(days, 7, 365);
         threshold = Math.Clamp(threshold, 1, 100);
 
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = Clock.Today;
         var from = today.AddDays(-days);
 
         ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();
@@ -131,9 +131,11 @@ public class AttendanceController : Controller
     }
 
     // GET: /Admin/Attendance/Student/5  -- one student's record
+    // Archived students included, same as their fee history.
     public async Task<IActionResult> Student(int id)
     {
         var student = await _context.Students
+            .IgnoreQueryFilters()
             .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -143,6 +145,7 @@ public class AttendanceController : Controller
         ViewBag.Student = student;
 
         return View(await _context.Attendances
+            .IgnoreQueryFilters()
             .Where(a => a.StudentId == id)
             .OrderByDescending(a => a.Date)
             .ToListAsync());
