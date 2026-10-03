@@ -13,9 +13,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Teacher> Teachers => Set<Teacher>();
-    public DbSet<Batch> Batches => Set<Batch>();
+    public DbSet<SchoolClass> SchoolClasses => Set<SchoolClass>();
     public DbSet<Subject> Subjects => Set<Subject>();
-    public DbSet<BatchSubject> BatchSubjects => Set<BatchSubject>();
+    public DbSet<ClassSubject> ClassSubjects => Set<ClassSubject>();
     public DbSet<Exam> Exams => Set<Exam>();
     public DbSet<ExamSubject> ExamSubjects => Set<ExamSubject>();
     public DbSet<Mark> Marks => Set<Mark>();
@@ -29,8 +29,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<Student>().HasIndex(s => s.StudentId).IsUnique();
         builder.Entity<Teacher>().HasIndex(t => t.TeacherId).IsUnique();
-        builder.Entity<Batch>().HasIndex(b => b.Name).IsUnique();
-        builder.Entity<BatchSubject>().HasIndex(bs => new { bs.BatchId, bs.SubjectId }).IsUnique();
+        builder.Entity<SchoolClass>().HasIndex(b => b.Name).IsUnique();
+        builder.Entity<ClassSubject>().HasIndex(bs => new { bs.SchoolClassId, bs.SubjectId }).IsUnique();
+
+        // Two classes on the same level would generate colliding Student IDs.
+        builder.Entity<SchoolClass>().HasIndex(c => c.Level).IsUnique();
 
         // One row per student per day: taking attendance twice updates, never duplicates.
         builder.Entity<Attendance>().HasIndex(a => new { a.StudentId, a.Date }).IsUnique();
@@ -57,6 +60,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // them back if an archive report ever needs the history.
         builder.Entity<Mark>().HasQueryFilter(m => m.Student!.IsActive);
         builder.Entity<Attendance>().HasQueryFilter(a => a.Student!.IsActive);
-        builder.Entity<Payment>().HasQueryFilter(p => p.Student!.IsActive);
+
+        // Payment carries two named filters so a caller can drop one without the other: the
+        // fee ledger shows voided rows struck through while every total still ignores them.
+        builder.Entity<Payment>().HasQueryFilter("Archived", p => p.Student!.IsActive);
+        builder.Entity<Payment>().HasQueryFilter("Voided", p => !p.IsVoided);
     }
 }

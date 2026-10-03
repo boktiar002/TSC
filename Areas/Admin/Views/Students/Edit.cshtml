@@ -53,32 +53,35 @@
 
                 <div class="col-md-6 mb-3">
 
-                    <label asp-for="ClassLevel"
+                    <label asp-for="Batch"
                            class="form-label">
-                        Class
+                        Batch
                     </label>
 
-                    <select asp-for="ClassLevel"
+                    <select asp-for="Batch"
                             class="form-select">
 
-                        <option value="2">Class 2</option>
-                        <option value="3">Class 3</option>
-                        <option value="4">Class 4</option>
-                        <option value="5">Class 5</option>
+                        <option value="">-- Select Batch --</option>
+                        @foreach (var batch in Student.Batches)
+                        {
+                            <option value="@batch">@batch</option>
+                        }
 
                     </select>
+
+                    <span asp-validation-for="Batch" class="text-danger"></span>
 
                 </div>
 
                 <div class="col-md-6 mb-3">
 
-                    <label asp-for="BatchId"
+                    <label asp-for="SchoolClassId"
                            class="form-label">
-                        Batch
+                        Class
                     </label>
 
-                    <select asp-for="BatchId" class="form-select"
-                            asp-items="@(new SelectList((IEnumerable<TSC.Models.Batch>)ViewBag.Batches, "Id", "Name"))">
+                    <select asp-for="SchoolClassId" class="form-select"
+                            asp-items="@(new SelectList((IEnumerable<TSC.Models.SchoolClass>)ViewBag.SchoolClasses, "Id", "Name"))">
                     </select>
 
                 </div>

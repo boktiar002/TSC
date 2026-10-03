@@ -23,5 +23,5 @@ public class Teacher
 
     public string? UserId { get; set; }
 
-    public ICollection<BatchSubject> BatchSubjects { get; set; } = new List<BatchSubject>();
+    public ICollection<ClassSubject> ClassSubjects { get; set; } = new List<ClassSubject>();
 }

@@ -105,9 +105,9 @@ public class StudentsController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
-    // GET: /Admin/Students?q=&batchId=&classLevel=
+    // GET: /Admin/Students?q=&schoolClassId=
     public async Task<IActionResult> Index(bool archived = false, string? q = null,
-        int? batchId = null, string? classLevel = null)
+        int? schoolClassId = null)
     {
         var query = _context.Students.AsQueryable();
 
@@ -129,11 +129,8 @@ public class StudentsController : Controller
                 (s.GuardianPhone != null && EF.Functions.ILike(s.GuardianPhone, pattern)));
         }
 
-        if (batchId is > 0)
-            query = query.Where(s => s.BatchId == batchId);
-
-        if (!string.IsNullOrWhiteSpace(classLevel))
-            query = query.Where(s => s.ClassLevel == classLevel);
+        if (schoolClassId is > 0)
+            query = query.Where(s => s.SchoolClassId == schoolClassId);
 
         ViewBag.Archived = archived;
         ViewBag.ArchivedCount = await _context.Students
@@ -141,30 +138,26 @@ public class StudentsController : Controller
             .CountAsync(s => !s.IsActive);
 
         ViewBag.Query = search;
-        ViewBag.BatchId = batchId;
-        ViewBag.ClassLevel = classLevel;
-        ViewBag.Batches = await _context.Batches.OrderBy(b => b.Name).ToListAsync();
-        ViewBag.ClassLevels = await _context.Students
-            .Where(s => s.ClassLevel != null)
-            .Select(s => s.ClassLevel!)
-            .Distinct()
-            .OrderBy(c => c)
-            .ToListAsync();
+        ViewBag.SchoolClassId = schoolClassId;
+        ViewBag.SchoolClasses = await _context.SchoolClasses.OrderBy(b => b.Name).ToListAsync();
 
         return View(await query
-            .Include(s => s.Batch)
+            .Include(s => s.SchoolClass)
             .OrderBy(s => s.StudentId)
             .ToListAsync());
     }
 
     // GET: /Admin/Students/Details/5
+    // IgnoreQueryFilters: an archived student is still readable here. Keeping their marks,
+    // attendance and fees is the whole reason they were archived rather than deleted.
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null)
             return NotFound();
 
         var student = await _context.Students
-            .Include(s => s.Batch)
+            .IgnoreQueryFilters()
+            .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
@@ -177,7 +170,7 @@ public class StudentsController : Controller
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        await LoadBatches();
+        await LoadSchoolClasses();
 
         return View();
     }
@@ -194,7 +187,7 @@ public class StudentsController : Controller
 
         if (!ModelState.IsValid)
         {
-            await LoadBatches();
+            await LoadSchoolClasses();
             return View(student);
         }
 
@@ -214,12 +207,13 @@ public class StudentsController : Controller
             return NotFound();
 
         var student = await _context.Students
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
             return NotFound();
 
-        await LoadBatches();
+        await LoadSchoolClasses();
 
         return View(student);
     }
@@ -237,11 +231,12 @@ public class StudentsController : Controller
 
         if (!ModelState.IsValid)
         {
-            await LoadBatches();
+            await LoadSchoolClasses();
             return View(student);
         }
 
         var existingStudent = await _context.Students
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (existingStudent == null)
@@ -249,14 +244,14 @@ public class StudentsController : Controller
 
         existingStudent.StudentId = student.StudentId;
         existingStudent.FullName = student.FullName;
-        existingStudent.ClassLevel = student.ClassLevel;
+        existingStudent.Batch = student.Batch;
         existingStudent.Phone = student.Phone;
         existingStudent.Email = student.Email;
         existingStudent.Address = student.Address;
         existingStudent.GuardianName = student.GuardianName;
         existingStudent.GuardianPhone = student.GuardianPhone;
         existingStudent.DateOfBirth = student.DateOfBirth;
-        existingStudent.BatchId = student.BatchId;
+        existingStudent.SchoolClassId = student.SchoolClassId;
 
         await _context.SaveChangesAsync();
 
@@ -273,7 +268,7 @@ public class StudentsController : Controller
             return NotFound();
 
         var student = await _context.Students
-            .Include(s => s.Batch)
+            .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
@@ -377,9 +372,9 @@ public class StudentsController : Controller
         student.UserId = null;
     }
 
-    private async Task LoadBatches()
+    private async Task LoadSchoolClasses()
     {
-        ViewBag.Batches = await _context.Batches
+        ViewBag.SchoolClasses = await _context.SchoolClasses
             .OrderBy(b => b.Name)
             .ToListAsync();
     }

@@ -3,10 +3,10 @@
 @{
     ViewData["Title"] = "Fees";
 
-    var batches = (IEnumerable<TSC.Models.Batch>)ViewBag.Batches;
-    var batchId = (int?)ViewBag.BatchId;
+    var schoolClasses = (IEnumerable<TSC.Models.SchoolClass>)ViewBag.SchoolClasses;
+    var schoolClassId = (int?)ViewBag.SchoolClassId;
     var month = (DateOnly)ViewBag.Month;
-    var batch = ViewBag.Batch as TSC.Models.Batch;
+    var schoolClass = ViewBag.SchoolClass as TSC.Models.SchoolClass;
     var paid = ViewBag.PaidByStudent as Dictionary<int, decimal> ?? new Dictionary<int, decimal>();
 }
 
@@ -23,10 +23,10 @@
 
 <form method="get" class="row g-2 align-items-end mb-4">
     <div class="col-sm-4">
-        <label for="batchId" class="form-label">Batch</label>
-        <select id="batchId" name="batchId" class="form-select" required
-                asp-items="@(new SelectList(batches, "Id", "Name", batchId))">
-            <option value="">Select a batch...</option>
+        <label for="schoolClassId" class="form-label">Class</label>
+        <select id="schoolClassId" name="schoolClassId" class="form-select" required
+                asp-items="@(new SelectList(schoolClasses, "Id", "Name", schoolClassId))">
+            <option value="">Select a class...</option>
         </select>
     </div>
 
@@ -41,24 +41,24 @@
     </div>
 </form>
 
-@if (batchId == null)
+@if (schoolClassId == null)
 {
-    <div class="alert alert-info">Choose a batch to see who has paid.</div>
+    <div class="alert alert-info">Choose a class to see who has paid.</div>
 }
-else if (batch!.MonthlyFee <= 0)
+else if (schoolClass!.MonthlyFee <= 0)
 {
     <div class="alert alert-warning">
-        <strong>@batch.Name</strong> has no monthly fee set, so there is nothing to collect.
-        <a asp-controller="Batches" asp-action="Edit" asp-route-id="@batch.Id">Set the fee</a>.
+        <strong>@schoolClass.Name</strong> has no monthly fee set, so there is nothing to collect.
+        <a asp-controller="Classes" asp-action="Edit" asp-route-id="@schoolClass.Id">Set the fee</a>.
     </div>
 }
 else if (!Model.Any())
 {
-    <div class="alert alert-warning">@batch.Name has no students yet.</div>
+    <div class="alert alert-warning">@schoolClass.Name has no students yet.</div>
 }
 else
 {
-    var fee = batch.MonthlyFee;
+    var fee = schoolClass.MonthlyFee;
     var collected = Model.Sum(s => paid.TryGetValue(s.Id, out var v) ? v : 0m);
     var expected = fee * Model.Count();
 
@@ -93,7 +93,7 @@ else
 
     <div class="card shadow-sm">
         <div class="card-header">
-            <strong>@batch.Name &middot; @month.ToString("MMMM yyyy")</strong>
+            <strong>@schoolClass.Name &middot; @month.ToString("MMMM yyyy")</strong>
             <span class="float-end text-muted">Fee @fee.ToString("0.##") per student</span>
         </div>
 

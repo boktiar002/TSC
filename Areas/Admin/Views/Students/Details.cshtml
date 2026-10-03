@@ -43,6 +43,18 @@
 
 </div>
 
+@if (!Model.IsActive)
+{
+    <div class="alert alert-secondary d-flex align-items-start gap-2">
+        <i class="bi bi-archive mt-1"></i>
+        <div>
+            <strong>Archived.</strong> @Model.FullName is off every roster and has no portal
+            login. Their marks, attendance and fees below are kept as history — restore them
+            from the archived list to put them back in the class.
+        </div>
+    </div>
+}
+
 <div class="row">
 
     <div class="col-md-6 mb-4">
@@ -65,19 +77,19 @@
                     </dd>
 
                     <dt class="col-sm-5">
-                        Class
-                    </dt>
-
-                    <dd class="col-sm-7">
-                        Class @Model.ClassLevel
-                    </dd>
-
-                    <dt class="col-sm-5">
                         Batch
                     </dt>
 
                     <dd class="col-sm-7">
-                        @Model.Batch?.Name
+                        @(string.IsNullOrWhiteSpace(Model.Batch) ? "—" : Model.Batch)
+                    </dd>
+
+                    <dt class="col-sm-5">
+                        Class
+                    </dt>
+
+                    <dd class="col-sm-7">
+                        @Model.SchoolClass?.Name
                     </dd>
 
                 </dl>

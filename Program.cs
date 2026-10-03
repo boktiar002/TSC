@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 if (args.Contains("selftest"))
 {
     GradingSelfTest.Run();
+    PhoneSelfTest.Run();
+    ClockSelfTest.Run();
     return 0;
 }
 

@@ -20,7 +20,7 @@
         {
             <div class="text-center py-5">
                 <h5>No teachers yet</h5>
-                <p class="text-muted">Add a teacher to start assigning subjects to batches.</p>
+                <p class="text-muted">Add a teacher to start assigning subjects to classes.</p>
                 <a asp-action="Create" class="btn btn-primary">Add Teacher</a>
             </div>
         }
@@ -47,16 +47,16 @@
                                 <td>@teacher.Specialization</td>
                                 <td>@teacher.Phone</td>
                                 <td>
-                                    @if (!teacher.BatchSubjects.Any())
+                                    @if (!teacher.ClassSubjects.Any())
                                     {
                                         <span class="text-muted">Unassigned</span>
                                     }
                                     else
                                     {
-                                        @foreach (var bs in teacher.BatchSubjects)
+                                        @foreach (var bs in teacher.ClassSubjects)
                                         {
                                             <span class="badge bg-light text-dark border me-1">
-                                                @bs.Subject?.Name &middot; @bs.Batch?.Name
+                                                @bs.Subject?.Name &middot; @bs.SchoolClass?.Name
                                             </span>
                                         }
                                     }

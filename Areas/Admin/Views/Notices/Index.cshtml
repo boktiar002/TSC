@@ -42,7 +42,7 @@ else
                         </h5>
 
                         <small class="text-muted">
-                            @notice.PublishedAt.ToLocalTime().ToString("dd MMM yyyy, h:mm tt")
+                            @Clock.ToDhaka(notice.PublishedAt).ToString("dd MMM yyyy, h:mm tt")
                         </small>
                     </div>
 

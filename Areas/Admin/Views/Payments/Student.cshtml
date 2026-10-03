@@ -4,7 +4,13 @@
     var student = (TSC.Models.Student)ViewBag.Student;
     ViewData["Title"] = $"Payments — {student.FullName}";
 
-    var fee = student.Batch?.MonthlyFee ?? 0m;
+    var fee = student.SchoolClass?.MonthlyFee ?? 0m;
+
+    // Voided receipts stay on the ledger so it can be reconciled against the cash box, but
+    // they are not money the centre has: every total here counts the live rows only.
+    var live = Model.Where(p => !p.IsVoided).ToList();
+    var voidedCount = Model.Count(p => p.IsVoided);
+
     var byMonth = Model.GroupBy(p => p.ForMonth).OrderByDescending(g => g.Key).ToList();
 }
 
@@ -12,7 +18,7 @@
     <div>
         <h1>@student.FullName</h1>
         <p class="text-muted mb-0">
-            @student.StudentId &middot; @student.Batch?.Name &middot; fee @fee.ToString("0.##") / month
+            @student.StudentId &middot; @student.SchoolClass?.Name &middot; fee @fee.ToString("0.##") / month
         </p>
     </div>
 
@@ -21,7 +27,7 @@
             Record Payment
         </a>
 
-        <a asp-action="Index" asp-route-batchId="@student.BatchId" class="btn btn-secondary">
+        <a asp-action="Index" asp-route-schoolClassId="@student.SchoolClassId" class="btn btn-secondary">
             Back to fees
         </a>
     </div>
@@ -32,7 +38,7 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Total paid</h6>
-                <p class="h3 mb-0 text-success">@Model.Sum(p => p.Amount).ToString("0.##")</p>
+                <p class="h3 mb-0 text-success">@live.Sum(p => p.Amount).ToString("0.##")</p>
             </div>
         </div>
     </div>
@@ -41,7 +47,7 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Months paid for</h6>
-                <p class="h3 mb-0">@byMonth.Count</p>
+                <p class="h3 mb-0">@live.Select(p => p.ForMonth).Distinct().Count()</p>
             </div>
         </div>
     </div>
@@ -50,7 +56,11 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Receipts</h6>
-                <p class="h3 mb-0">@Model.Count()</p>
+                <p class="h3 mb-0">@live.Count</p>
+                @if (voidedCount > 0)
+                {
+                    <div class="text-muted small">@voidedCount voided, kept on the ledger</div>
+                }
             </div>
         </div>
     </div>
@@ -79,28 +89,47 @@
                 <tbody>
                     @foreach (var group in byMonth)
                     {
-                        var monthTotal = group.Sum(p => p.Amount);
+                        var monthTotal = group.Where(p => !p.IsVoided).Sum(p => p.Amount);
                         var short_ = fee - monthTotal;
 
                         @foreach (var payment in group)
                         {
-                            <tr>
+                            <tr class="@(payment.IsVoided ? "text-muted" : null)">
                                 <td>@payment.ForMonth.ToString("MMMM yyyy")</td>
                                 <td>@payment.PaymentDate.ToString("dd MMM yyyy")</td>
-                                <td class="text-end">@payment.Amount.ToString("0.##")</td>
+                                <td class="text-end">
+                                    @if (payment.IsVoided)
+                                    {
+                                        <s>@payment.Amount.ToString("0.##")</s>
+                                        <span class="badge text-bg-danger ms-1">VOID</span>
+                                    }
+                                    else
+                                    {
+                                        @payment.Amount.ToString("0.##")
+                                    }
+                                </td>
                                 <td>@payment.PaymentMethod</td>
-                                <td class="small text-muted">@payment.Note</td>
+                                <td class="small text-muted">
+                                    @payment.Note
+                                    @if (payment.IsVoided && payment.VoidedAt != null)
+                                    {
+                                        <div>voided @Clock.ToDhaka(payment.VoidedAt.Value).ToString("dd MMM yyyy, h:mm tt")</div>
+                                    }
+                                </td>
                                 <td class="text-end">
                                     <a asp-action="Receipt" asp-route-id="@payment.Id"
                                        class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-receipt"></i> Receipt
                                     </a>
 
-                                    <form asp-action="Delete" asp-route-id="@payment.Id" method="post"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Delete this payment record?');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                    </form>
+                                    @if (!payment.IsVoided)
+                                    {
+                                        <form asp-action="Void" asp-route-id="@payment.Id" method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Void this receipt? It stays on the ledger for the record but stops counting towards any total.');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Void</button>
+                                        </form>
+                                    }
                                 </td>
                             </tr>
                         }

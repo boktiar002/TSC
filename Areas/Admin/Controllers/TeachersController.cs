@@ -109,8 +109,8 @@ public class TeachersController : Controller
     public async Task<IActionResult> Index()
     {
         var teachers = await _context.Teachers
-            .Include(t => t.BatchSubjects).ThenInclude(bs => bs.Batch)
-            .Include(t => t.BatchSubjects).ThenInclude(bs => bs.Subject)
+            .Include(t => t.ClassSubjects).ThenInclude(bs => bs.SchoolClass)
+            .Include(t => t.ClassSubjects).ThenInclude(bs => bs.Subject)
             .OrderBy(t => t.FullName)
             .ToListAsync();
 
@@ -197,9 +197,9 @@ public class TeachersController : Controller
         if (teacher == null)
             return NotFound();
 
-        // Cascade would silently drop the batch assignments; make the admin unassign first.
-        if (await _context.BatchSubjects.AnyAsync(bs => bs.TeacherId == id))
-            TempData["Error"] = $"{teacher.FullName} is still assigned to a batch. Remove those assignments first.";
+        // Cascade would silently drop the class assignments; make the admin unassign first.
+        if (await _context.ClassSubjects.AnyAsync(bs => bs.TeacherId == id))
+            TempData["Error"] = $"{teacher.FullName} is still assigned to a class. Remove those assignments first.";
         else
         {
             // Take the login with the record, or an orphaned account is left behind that

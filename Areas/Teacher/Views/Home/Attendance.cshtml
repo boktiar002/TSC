@@ -3,8 +3,8 @@
 @{
     ViewData["Title"] = "Attendance";
 
-    var batches = (List<TSC.Models.Batch>)ViewBag.Batches;
-    var batchId = (int?)ViewBag.BatchId;
+    var schoolClasses = (List<TSC.Models.SchoolClass>)ViewBag.SchoolClasses;
+    var schoolClassId = (int?)ViewBag.SchoolClassId;
     var date = (DateOnly)ViewBag.Date;
 }
 
@@ -16,22 +16,22 @@
     </p>
 </div>
 
-@if (!batches.Any())
+@if (!schoolClasses.Any())
 {
     <div class="alert alert-warning">
-        You are not assigned to any batch yet. The office assigns subjects to teachers from
-        the batch page.
+        You are not assigned to any class yet. The office assigns subjects to teachers from
+        the class page.
     </div>
 }
 else
 {
     <form method="get" class="row g-2 align-items-end mb-3">
         <div class="col-7 col-sm-4">
-            <label for="batchId" class="form-label">Batch</label>
-            <select id="batchId" name="batchId" class="form-select" onchange="this.form.submit();">
-                @foreach (var b in batches)
+            <label for="schoolClassId" class="form-label">Class</label>
+            <select id="schoolClassId" name="schoolClassId" class="form-select" onchange="this.form.submit();">
+                @foreach (var b in schoolClasses)
                 {
-                    <option value="@b.Id" selected="@(b.Id == batchId)">@b.Name</option>
+                    <option value="@b.Id" selected="@(b.Id == schoolClassId)">@b.Name</option>
                 }
             </select>
         </div>
@@ -48,11 +48,11 @@ else
 
     @if (Model == null)
     {
-        <div class="alert alert-info">Choose a batch above to take attendance.</div>
+        <div class="alert alert-info">Choose a class above to take attendance.</div>
     }
     else if (!Model.Roster.Any())
     {
-        <div class="alert alert-warning">This batch has no students yet.</div>
+        <div class="alert alert-warning">This class has no students yet.</div>
     }
     else
     {

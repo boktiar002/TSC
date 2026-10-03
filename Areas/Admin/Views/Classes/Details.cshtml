@@ -1,7 +1,7 @@
-﻿@model TSC.Models.Batch
+﻿@model TSC.Models.SchoolClass
 
 @{
-    ViewData["Title"] = "Batch Details";
+    ViewData["Title"] = "Class Details";
     var availableSubjects = (IEnumerable<TSC.Models.Subject>)ViewBag.AvailableSubjects;
     var teachers = (IEnumerable<TSC.Models.Teacher>)ViewBag.Teachers;
 }
@@ -31,13 +31,13 @@
 
                 @if (!Model.Students.Any())
                 {
-                    <p class="text-muted mb-0">No students assigned to this batch yet.</p>
+                    <p class="text-muted mb-0">No students assigned to this class yet.</p>
                 }
                 else
                 {
                     <table class="table table-sm mb-0">
                         <thead>
-                            <tr><th>ID</th><th>Name</th><th>Class</th></tr>
+                            <tr><th>ID</th><th>Name</th></tr>
                         </thead>
                         <tbody>
                             @foreach (var student in Model.Students.OrderBy(s => s.FullName))
@@ -49,7 +49,6 @@
                                             @student.FullName
                                         </a>
                                     </td>
-                                    <td>@student.ClassLevel</td>
                                 </tr>
                             }
                         </tbody>
@@ -64,11 +63,11 @@
         <div class="card shadow-sm h-100">
             <div class="card-header">
                 <strong>Subjects &amp; Teachers</strong>
-                <span class="badge bg-secondary float-end">@Model.BatchSubjects.Count</span>
+                <span class="badge bg-secondary float-end">@Model.ClassSubjects.Count</span>
             </div>
             <div class="card-body">
 
-                @if (!Model.BatchSubjects.Any())
+                @if (!Model.ClassSubjects.Any())
                 {
                     <p class="text-muted">No subjects assigned yet.</p>
                 }
@@ -79,7 +78,7 @@
                             <tr><th>Subject</th><th>Teacher</th><th></th></tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model.BatchSubjects.OrderBy(bs => bs.Subject?.Name))
+                            @foreach (var item in Model.ClassSubjects.OrderBy(bs => bs.Subject?.Name))
                             {
                                 <tr>
                                     <td>@item.Subject?.Name</td>
@@ -87,7 +86,7 @@
                                     <td class="text-end">
                                         <form asp-action="RemoveSubject" asp-route-id="@Model.Id" method="post"
                                               onsubmit="return confirm('Remove @item.Subject?.Name from @Model.Name?');">
-                                            <input type="hidden" name="batchSubjectId" value="@item.Id" />
+                                            <input type="hidden" name="classSubjectId" value="@item.Id" />
                                             <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
                                         </form>
                                     </td>
@@ -108,7 +107,7 @@
                         }
                         else
                         {
-                            <text>Every <a asp-controller="Subjects" asp-action="Index">subject</a> is already assigned to this batch.</text>
+                            <text>Every <a asp-controller="Subjects" asp-action="Index">subject</a> is already assigned to this class.</text>
                         }
                     </p>
                 }

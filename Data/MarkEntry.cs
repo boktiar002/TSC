@@ -12,9 +12,9 @@ public static class MarkEntry
     public static async Task<Result> SaveAsync(
         ApplicationDbContext context, Exam exam, ExamSubject paper, int[] studentIds, string?[] scores)
     {
-        // Re-read the roster: a tampered form must not reach a student in another batch.
+        // Re-read the roster: a tampered form must not reach a student in another class.
         var roster = await context.Students
-            .Where(s => s.BatchId == exam.BatchId)
+            .Where(s => s.SchoolClassId == exam.SchoolClassId)
             .Select(s => s.Id)
             .ToListAsync();
 

@@ -31,17 +31,25 @@ public class Student
     [DataType(DataType.Date), Display(Name = "Date of Birth")]
     public DateOnly? DateOfBirth { get; set; }
 
+    // The two sittings the centre runs. A batch is not a class: both branches sit the same
+    // paper and are ranked together, so it only says which sitting a child turns up for.
+    // This is the list the form offers; AllowedValues below is what enforces it, because a
+    // posted form is not bound by what the dropdown happened to contain.
+    public static readonly string[] Batches = { "Morning", "Evening" };
+
     [StringLength(20)]
-    public string? ClassLevel { get; set; }
+    [AllowedValues(null, "Morning", "Evening", ErrorMessage = "Batch must be Morning or Evening.")]
+    [Display(Name = "Batch")]
+    public string? Batch { get; set; }
 
     // Students who leave are archived, not deleted: the centre still needs their fee and
     // mark history. A global query filter keeps them out of every roster automatically.
     public bool IsActive { get; set; } = true;
 
-    [Range(1, int.MaxValue, ErrorMessage = "Please select a batch.")]
-    [Display(Name = "Batch")]
-    public int BatchId { get; set; }
-    public Batch? Batch { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Please select a class.")]
+    [Display(Name = "Class")]
+    public int SchoolClassId { get; set; }
+    public SchoolClass? SchoolClass { get; set; }
 
     public string? UserId { get; set; }
 }
