@@ -10,6 +10,10 @@ if (args.Contains("selftest"))
     GradingSelfTest.Run();
     PhoneSelfTest.Run();
     ClockSelfTest.Run();
+
+    // The host is not built yet, so hand the renderer the web root the hard way.
+    ReportCardSelfTest.Run(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"));
+
     return 0;
 }
 

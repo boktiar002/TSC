@@ -11,10 +11,12 @@ namespace TSC.Areas.Admin.Controllers;
 public class ExamsController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly IWebHostEnvironment _env;
 
-    public ExamsController(ApplicationDbContext context)
+    public ExamsController(ApplicationDbContext context, IWebHostEnvironment env)
     {
         _context = context;
+        _env = env;
     }
 
     // GET: /Admin/Exams
@@ -297,13 +299,35 @@ public class ExamsController : Controller
     // report card is how the office reads them back.
     public async Task<IActionResult> ReportCard(int id, int[]? examIds)
     {
+        var card = await BuildReportCard(id, examIds);
+
+        return card == null ? NotFound() : View(card);
+    }
+
+    // GET: /Admin/Exams/ReportCardPdf/5?examIds=3&examIds=4
+    // The same card as a file the guardian can keep, built from the same model so the download
+    // and the printed sheet cannot disagree.
+    public async Task<IActionResult> ReportCardPdf(int id, int[]? examIds)
+    {
+        var card = await BuildReportCard(id, examIds);
+
+        if (card == null)
+            return NotFound();
+
+        var pdf = ReportCardDocument.Render(card, _env.WebRootPath);
+
+        return File(pdf, "application/pdf", $"report-card-{card.Student.StudentId}-{Clock.Today:yyyy-MM-dd}.pdf");
+    }
+
+    private async Task<ReportCardModel?> BuildReportCard(int id, int[]? examIds)
+    {
         var student = await _context.Students
             .IgnoreQueryFilters()
             .Include(s => s.SchoolClass)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
-            return NotFound();
+            return null;
 
         var exams = await _context.Exams
             .Where(e => e.SchoolClassId == student.SchoolClassId)
@@ -335,23 +359,24 @@ public class ExamsController : Controller
             .Where(p => p.StudentId == id && p.ForMonth == thisMonth)
             .SumAsync(p => (decimal?)p.Amount) ?? 0m;
 
-        ViewBag.Student = student;
-        ViewBag.Exams = exams;
-        ViewBag.Chosen = chosen;
-        ViewBag.Columns = columns;
-        ViewBag.Ranked = ranked;
-        ViewBag.ClassSize = ranked.Count;
-        ViewBag.AttendanceDays = attendance?.Days ?? 0;
-        ViewBag.AttendancePresent = attendance?.Present ?? 0;
-        ViewBag.ThisMonth = thisMonth;
-        ViewBag.MonthlyFee = student.SchoolClass?.MonthlyFee ?? 0m;
-        ViewBag.PaidThisMonth = paid;
-
         // An archived student is not in the live ranking, so work their line out on its own.
         var row = ranked.FirstOrDefault(r => r.Student.Id == id)
             ?? await Ranking.RowForAsync(_context, student, chosen, columns);
 
-        return View(row);
+        return new ReportCardModel
+        {
+            Student = student,
+            Exams = exams,
+            Chosen = chosen,
+            Columns = columns,
+            Row = row,
+            ClassSize = ranked.Count,
+            AttendanceDays = attendance?.Days ?? 0,
+            AttendancePresent = attendance?.Present ?? 0,
+            ThisMonth = thisMonth,
+            MonthlyFee = student.SchoolClass?.MonthlyFee ?? 0m,
+            PaidThisMonth = paid,
+        };
     }
 
     private async Task<Exam?> LoadExam(int? id) =>

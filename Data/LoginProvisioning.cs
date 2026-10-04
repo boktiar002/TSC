@@ -56,7 +56,11 @@ public static class LoginProvisioning
             UserName = email,
             Email = email,
             EmailConfirmed = true,
-            FullName = fullName
+            FullName = fullName,
+
+            // Kept readable so the office can look it up again off the Logins screen; set here
+            // rather than in a follow-up update so the account is never saved without it.
+            IssuedPassword = password
         };
 
         var created = await users.CreateAsync(user, password);
@@ -76,9 +80,8 @@ public static class LoginProvisioning
         return (user, password, null);
     }
 
-    // The password is shown once, so a lost or mis-typed one cannot be looked up. Re-issue
-    // instead of deleting the account and starting over, which would drop the person's link
-    // to their marks, attendance and fees.
+    // Re-issue instead of deleting the account and starting over, which would drop the person's
+    // link to their marks, attendance and fees.
     public static async Task<(ApplicationUser? User, string? Password, string? Error)> ResetPasswordAsync(
         UserManager<ApplicationUser> users, string userId)
     {
@@ -93,6 +96,15 @@ public static class LoginProvisioning
 
         if (!reset.Succeeded)
             return (null, null, string.Join(" ", reset.Errors.Select(e => e.Description)));
+
+        // Replaces whatever the Logins screen was showing, including a null left behind by the
+        // owner having changed their own password.
+        user.IssuedPassword = password;
+
+        var stored = await users.UpdateAsync(user);
+
+        if (!stored.Succeeded)
+            return (null, null, string.Join(" ", stored.Errors.Select(e => e.Description)));
 
         return (user, password, null);
     }
