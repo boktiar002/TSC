@@ -1,39 +1,59 @@
-/* TSC theme - overrides on top of Bootstrap 5.3. There is no Sass build step
-   here, so component variables are set on the compiled classes. */
+/* TSC theme — overrides on top of Bootstrap 5.3. There is no Sass build step here, so
+   component variables are set on the compiled classes.
+
+   Written mobile-first: the office runs this one-handed from a phone (roll call in the
+   classroom, a fee check at the desk, a result looked up while a guardian waits), and the
+   desktop sidebar is the enhancement layered on at >=992px, not the other way round. */
 
 :root {
-    --tsc-navy: #12294a;
-    --tsc-navy-700: #1b3a6b;
-    --tsc-brand: #1d4ed8;
-    --tsc-brand-600: #1a45c0;
-    --tsc-brand-700: #163a9f;
-    --tsc-accent: #f5a524;
-    --tsc-ink: #0f172a;
-    --tsc-muted: #5d6b80;
-    --tsc-line: #d9e0ea;
-    /* Three tones, not one: a tinted page, a lighter card, and a shaded strip for headers
-       and table heads. Pure white is reserved for inputs and the logo chip. */
-    --tsc-surface: #e8edf4;
-    --tsc-card: #fdfefe;
-    --tsc-shade: #f1f5fa;
+    /* Ink & brand */
+    --tsc-navy: #0b1b36;
+    --tsc-navy-700: #14305c;
+    --tsc-brand: #2563eb;
+    --tsc-brand-600: #1d4ed8;
+    --tsc-brand-700: #1b3fae;
+    --tsc-brand-soft: #eaf0fe;
+    --tsc-accent: #f6a723;
+    --tsc-mint: #10b981;
+    --tsc-rose: #e11d48;
+    /* Report-card only: the ruled frame and kicker on the one document a family keeps. */
+    --tsc-gold: #b4883b;
+
+    --tsc-ink: #0f1b2d;
+    --tsc-muted: #64748b;
+    --tsc-line: #e3e9f2;
+
+    /* Three tones, not one: a tinted page, a white card, and a shaded strip for headers and
+       table heads. Pure white is reserved for cards and inputs so they lift off the page. */
+    --tsc-surface: #f2f5fa;
+    --tsc-card: #ffffff;
+    --tsc-shade: #f7f9fd;
+
+    /* One shadow scale. Soft and wide rather than dark and tight — the thing that separates
+       an app that looks designed from one that looks like a form. */
+    --tsc-shadow-sm: 0 1px 2px rgba(13, 27, 48, .04), 0 1px 3px rgba(13, 27, 48, .04);
+    --tsc-shadow: 0 1px 2px rgba(13, 27, 48, .04), 0 8px 24px rgba(13, 27, 48, .06);
+    --tsc-shadow-lg: 0 2px 4px rgba(13, 27, 48, .04), 0 18px 48px rgba(13, 27, 48, .12);
+
+    --tsc-radius: 1rem;
+    --tsc-sidebar-w: 16.5rem;
 
     --bs-primary: var(--tsc-brand);
-    --bs-primary-rgb: 29, 78, 216;
-    --bs-link-color: var(--tsc-brand);
+    --bs-primary-rgb: 37, 99, 235;
+    --bs-link-color: var(--tsc-brand-600);
     --bs-link-color-rgb: 29, 78, 216;
     --bs-link-hover-color: var(--tsc-brand-700);
     --bs-body-color: var(--tsc-ink);
     --bs-secondary-color: var(--tsc-muted);
     --bs-border-color: var(--tsc-line);
-    --bs-border-radius: .625rem;
+    --bs-border-radius: .75rem;
     --bs-body-font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --bs-focus-ring-color: rgba(29, 78, 216, .25);
+    --bs-focus-ring-color: rgba(37, 99, 235, .25);
 }
 
 html {
     font-size: 15px;
-    position: relative;
-    min-height: 100%;
+    -webkit-text-size-adjust: 100%;
 }
 
 @media (min-width: 768px) {
@@ -41,178 +61,734 @@ html {
 }
 
 body {
-    background:
-        radial-gradient(900px 380px at 50% -140px, rgba(29, 78, 216, .07), transparent 70%),
-        var(--tsc-surface);
-    background-attachment: fixed;
-    letter-spacing: -.005em;
+    background: var(--tsc-surface);
+    color: var(--tsc-ink);
+    letter-spacing: -.006em;
+    min-height: 100vh;
 }
 
 h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
-    font-weight: 600;
-    letter-spacing: -.02em;
+    font-weight: 650;
+    letter-spacing: -.022em;
     color: var(--tsc-navy);
 }
 
-h1, .h1 { font-size: 1.6rem; }
-h2, .h2 { font-size: 1.35rem; }
-.display-6 { font-size: 2rem; font-weight: 650; letter-spacing: -.03em; }
+h1, .h1 { font-size: 1.4rem; }
+h2, .h2 { font-size: 1.2rem; }
+h3, .h3 { font-size: 1.05rem; }
 
-.text-primary { color: var(--tsc-brand) !important; }
-.bg-primary { background-color: var(--tsc-brand) !important; }
-.text-muted { color: var(--tsc-muted) !important; }
-
-/* ---------- Top bar ---------- */
-.tsc-navbar {
-    background: linear-gradient(100deg, var(--tsc-navy) 0%, var(--tsc-navy-700) 100%);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, .06), 0 6px 24px rgba(15, 23, 42, .12);
+@media (min-width: 768px) {
+    h1, .h1 { font-size: 1.65rem; }
+    h2, .h2 { font-size: 1.35rem; }
 }
 
-.tsc-navbar .navbar-brand {
+.display-6 { font-size: 1.85rem; font-weight: 700; letter-spacing: -.035em; }
+
+.text-primary { color: var(--tsc-brand-600) !important; }
+.bg-primary { background-color: var(--tsc-brand) !important; }
+.text-muted { color: var(--tsc-muted) !important; }
+.min-w-0 { min-width: 0; }
+
+/* ======================================================================
+   APP SHELL
+   ====================================================================== */
+
+/* Phone: the sidebar is a drawer parked off-screen. Desktop: it is just there. */
+.tsc-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1045;
+    width: var(--tsc-sidebar-w);
+    display: flex;
+    flex-direction: column;
+    padding: 1rem .75rem calc(1rem + env(safe-area-inset-bottom));
+    background: linear-gradient(170deg, var(--tsc-navy) 0%, #11284d 55%, var(--tsc-navy-700) 100%);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transform: translateX(-100%);
+    transition: transform .22s cubic-bezier(.4, 0, .2, 1);
+}
+
+.tsc-sidebar.is-open { transform: translateX(0); }
+
+.tsc-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+    background: rgba(8, 17, 32, .5);
+    backdrop-filter: blur(2px);
+}
+
+.tsc-main {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.tsc-sidebar-brand {
     display: flex;
     align-items: center;
     gap: .625rem;
+    padding: .5rem .5rem 1.25rem;
     color: #fff;
-    font-weight: 650;
+    text-decoration: none;
+    font-weight: 700;
     letter-spacing: -.02em;
     line-height: 1.1;
 }
 
-/* The logo is black on white, so it sits on a white chip rather than on the navy bar. */
+/* The logo is black on white, so it sits on a white chip rather than on the navy panel. */
 .tsc-brand-mark {
-    width: 2.3rem;
-    height: 2.3rem;
-    border-radius: .55rem;
+    width: 2.35rem;
+    height: 2.35rem;
+    flex: 0 0 auto;
+    border-radius: .65rem;
     display: grid;
     place-items: center;
     background: #fff;
-    padding: .2rem;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, .35);
+    padding: .22rem;
+    box-shadow: 0 2px 8px rgba(8, 17, 32, .4);
 }
 
-.tsc-brand-mark img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-.tsc-hero-logo {
-    background: #fff;
-    border-radius: 1rem;
-    padding: 1.25rem;
-    display: inline-block;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, .25);
-}
-
-.tsc-hero-logo img { width: 10rem; max-width: 100%; }
+.tsc-brand-mark img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
 .tsc-brand-sub {
     display: block;
-    font-size: .625rem;
+    font-size: .6rem;
     font-weight: 500;
     letter-spacing: .14em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, .55);
+    color: rgba(255, 255, 255, .5);
 }
 
-.tsc-navbar .nav-link {
-    color: rgba(255, 255, 255, .78);
+.tsc-nav { display: flex; flex-direction: column; gap: .15rem; flex: 1 1 auto; }
+
+/* Only appears for someone holding two roles, where the same word ("Attendance") means two
+   different pages and the heading is what tells them apart. */
+.tsc-nav-section {
+    padding: .9rem .75rem .3rem;
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .4);
+}
+
+.tsc-nav-section:first-child { padding-top: .2rem; }
+
+.tsc-nav-link {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    width: 100%;
+    padding: .62rem .75rem;
+    border: 0;
+    border-radius: .65rem;
+    background: transparent;
+    color: rgba(255, 255, 255, .72);
     font-size: .925rem;
     font-weight: 500;
-    padding: .45rem .75rem;
-    border-radius: .5rem;
-    white-space: nowrap;
+    text-align: left;
+    text-decoration: none;
+    transition: background .14s ease, color .14s ease;
 }
 
-.tsc-navbar .nav-link:hover,
-.tsc-navbar .nav-link:focus,
-.tsc-navbar .show > .nav-link {
+.tsc-nav-link i { font-size: 1.05rem; width: 1.25rem; flex: 0 0 auto; }
+
+.tsc-nav-link:hover,
+.tsc-nav-link:focus-visible {
+    background: rgba(255, 255, 255, .08);
     color: #fff;
-    background: rgba(255, 255, 255, .1);
 }
 
-.tsc-navbar .nav-link.active {
+.tsc-nav-link.active {
+    background: var(--tsc-brand);
     color: #fff;
-    background: rgba(255, 255, 255, .16);
-    box-shadow: inset 0 -2px 0 var(--tsc-accent);
+    font-weight: 600;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, .4);
 }
 
-.tsc-navbar .navbar-toggler {
-    border-color: rgba(255, 255, 255, .25);
-    color: rgba(255, 255, 255, .85);
+.tsc-sidebar-foot {
+    margin-top: .75rem;
+    padding-top: .75rem;
+    border-top: 1px solid rgba(255, 255, 255, .1);
 }
 
-.tsc-navbar .dropdown-menu {
+.tsc-nav-signout { color: #ffb4bd; }
+.tsc-nav-signout:hover { background: rgba(225, 29, 72, .18); color: #fff; }
+
+/* ---------- Top bar ---------- */
+.tsc-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    min-height: 3.5rem;
+    padding: .5rem .85rem;
+    padding-top: calc(.5rem + env(safe-area-inset-top));
+    background: rgba(255, 255, 255, .88);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--tsc-line);
+}
+
+.tsc-menu-btn {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
     border: 1px solid var(--tsc-line);
-    border-radius: .75rem;
-    padding: .375rem;
-    box-shadow: 0 12px 32px rgba(15, 23, 42, .16);
+    border-radius: .65rem;
+    background: #fff;
+    color: var(--tsc-navy);
+    font-size: 1.25rem;
 }
 
-.dropdown-item {
-    border-radius: .5rem;
-    padding: .45rem .6rem;
-    font-size: .925rem;
+.tsc-topbar-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 650;
+    font-size: 1rem;
+    color: var(--tsc-navy);
+    letter-spacing: -.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.dropdown-item.active, .dropdown-item:active {
-    background: rgba(29, 78, 216, .1);
-    color: var(--tsc-brand-700);
+.tsc-user {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .3rem .4rem;
+    border: 1px solid transparent;
+    border-radius: 2rem;
+    background: transparent;
+    color: var(--tsc-navy);
 }
 
-.dropdown-header {
-    font-size: .6875rem;
+.tsc-user:hover { background: var(--tsc-shade); border-color: var(--tsc-line); }
+
+.tsc-avatar {
+    width: 2.1rem;
+    height: 2.1rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(140deg, var(--tsc-brand) 0%, #6d4df6 100%);
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+.tsc-user-text { text-align: left; line-height: 1.15; }
+.tsc-user-name { display: block; font-size: .875rem; font-weight: 600; }
+
+.tsc-user-role,
+.tsc-role {
+    display: block;
+    font-size: .65rem;
     font-weight: 650;
     letter-spacing: .08em;
     text-transform: uppercase;
     color: var(--tsc-muted);
 }
 
-.tsc-avatar {
-    width: 1.9rem;
-    height: 1.9rem;
-    border-radius: 50%;
+/* ---------- Content ---------- */
+.tsc-content {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 82rem;
+    margin: 0 auto;
+    /* The bottom bar floats over the page, so the last row of content needs room to clear it. */
+    padding: 1rem .85rem calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+/* ---------- Bottom bar (phone only) ----------
+   The primary navigation on a phone, so it is treated as a real control surface rather than a
+   row of grey icons: the selected tab's icon sits in a filled pill in that tab's own colour,
+   which makes "where am I" readable at a glance from arm's length. */
+.tsc-bottombar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 1035;
+    display: flex;
+    gap: .15rem;
+    padding: .4rem .35rem;
+    padding-bottom: calc(.4rem + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: saturate(180%) blur(16px);
+    border-top: 1px solid rgba(227, 233, 242, .9);
+    box-shadow: 0 -6px 28px rgba(13, 27, 48, .1);
+}
+
+.tsc-bottombar-link {
+    flex: 1 1 0;
+    min-width: 0;
+    /* Apple and Android both put the floor for a reliable tap at ~44px; this clears it. */
+    min-height: 3.1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .2rem;
+    padding: .25rem .1rem;
+    border: 0;
+    border-radius: .75rem;
+    background: transparent;
+    color: var(--tsc-muted);
+    font-size: .66rem;
+    font-weight: 650;
+    letter-spacing: -.01em;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* The pill behind the icon. Transparent until the tab is current, so the row stays calm. */
+.tsc-bottombar-link i {
+    font-size: 1.15rem;
+    line-height: 1;
     display: grid;
     place-items: center;
-    background: rgba(255, 255, 255, .16);
+    width: 2.6rem;
+    height: 1.7rem;
+    border-radius: .75rem;
+    background: transparent;
+    transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+
+.tsc-bottombar-link span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Each tab carries its own accent, so the colour itself tells you which section you are in.
+   Driven by position rather than a class, because the items come from NavMenu and the layout
+   only ever renders four plus More. */
+.tsc-bottombar-link:nth-child(1) { --tab: #2563eb; --tab-soft: #e8effe; }
+.tsc-bottombar-link:nth-child(2) { --tab: #6d4df6; --tab-soft: #efebfe; }
+.tsc-bottombar-link:nth-child(3) { --tab: #0a8f66; --tab-soft: #e4f7f0; }
+.tsc-bottombar-link:nth-child(4) { --tab: #c9780a; --tab-soft: #fdf2e2; }
+.tsc-bottombar-link:nth-child(5) { --tab: #64748b; --tab-soft: #eef1f6; }
+
+.tsc-bottombar-link.active { color: var(--tab); }
+
+.tsc-bottombar-link.active i {
+    background: var(--tab);
     color: #fff;
-    font-size: .75rem;
-    font-weight: 650;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--tab) 40%, transparent);
+}
+
+/* Pressing a tab tints it before the next page has loaded, so a tap never feels ignored. */
+.tsc-bottombar-link:active i { transform: scale(.92); background: var(--tab-soft); color: var(--tab); }
+.tsc-bottombar-link.active:active i { background: var(--tab); color: #fff; }
+
+/* color-mix is recent; without it the shadow is simply dropped rather than rendering black. */
+@supports not (color: color-mix(in srgb, red, blue)) {
+    .tsc-bottombar-link.active i { box-shadow: 0 4px 12px rgba(13, 27, 48, .22); }
+}
+
+/* Desktop: the drawer becomes furniture and the bottom bar goes away. */
+@media (min-width: 992px) {
+    .tsc-sidebar { transform: none; box-shadow: var(--tsc-shadow-lg); }
+    .tsc-main { margin-left: var(--tsc-sidebar-w); }
+    .tsc-scrim, .tsc-menu-btn, .tsc-bottombar { display: none !important; }
+    .tsc-topbar { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .tsc-content { padding: 1.5rem; }
+    .tsc-topbar-title { font-size: 1.1rem; }
+}
+
+/* ======================================================================
+   PAGE FURNITURE
+   ====================================================================== */
+
+/* Title + actions. Stacks on a phone instead of squeezing buttons off the edge. */
+.tsc-page-head {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    margin-bottom: 1.1rem;
+}
+
+.tsc-page-head > div:first-child { min-width: 0; }
+
+.tsc-page-head .btn,
+.tsc-page-head > a,
+.tsc-page-head > button { flex: 0 0 auto; }
+
+@media (min-width: 768px) {
+    .tsc-page-head {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+}
+
+.tsc-narrow { max-width: 34rem; margin: 0 auto; }
+
+/* ---------- Hero stat panel ---------- */
+.tsc-statpanel {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--tsc-radius);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    color: #fff;
+    background:
+        radial-gradient(90rem 30rem at 110% -40%, rgba(109, 77, 246, .85), transparent 60%),
+        linear-gradient(135deg, var(--tsc-brand-600) 0%, #3b6ef5 55%, #5b8bff 100%);
+    box-shadow: 0 10px 30px rgba(37, 99, 235, .3);
+}
+
+.tsc-statpanel h1, .tsc-statpanel h2, .tsc-statpanel .h2 { color: #fff; }
+.tsc-statpanel .tsc-statpanel-sub { color: rgba(255, 255, 255, .78); font-size: .9rem; }
+
+.tsc-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .65rem;
+    margin-top: 1.1rem;
+}
+
+@media (min-width: 768px) {
+    .tsc-statpanel { padding: 1.75rem; }
+    .tsc-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .9rem; }
+}
+
+.tsc-stat {
+    border-radius: .85rem;
+    padding: .8rem .9rem;
+    background: rgba(255, 255, 255, .14);
+    border: 1px solid rgba(255, 255, 255, .18);
+    color: #fff;
+    text-decoration: none;
+    display: block;
+}
+
+a.tsc-stat:hover { background: rgba(255, 255, 255, .22); color: #fff; }
+
+.tsc-stat-value { font-size: 1.6rem; font-weight: 750; letter-spacing: -.035em; line-height: 1.1; }
+.tsc-stat-label { font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .78); }
+
+/* ---------- Quick actions ---------- */
+.tsc-quick {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .65rem;
+    margin-bottom: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .tsc-quick { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .9rem; }
+}
+
+.tsc-quick-link {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    padding: .85rem;
+    border-radius: .85rem;
+    background: var(--tsc-card);
+    border: 1px solid var(--tsc-line);
+    box-shadow: var(--tsc-shadow-sm);
+    color: var(--tsc-navy);
+    font-weight: 600;
+    font-size: .9rem;
+    text-decoration: none;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+}
+
+.tsc-quick-link:hover {
+    transform: translateY(-2px);
+    border-color: rgba(37, 99, 235, .35);
+    box-shadow: var(--tsc-shadow);
+    color: var(--tsc-brand-700);
+}
+
+.tsc-quick-icon {
+    width: 2.4rem;
+    height: 2.4rem;
+    flex: 0 0 auto;
+    border-radius: .7rem;
+    display: grid;
+    place-items: center;
+    background: var(--tsc-brand-soft);
+    color: var(--tsc-brand-600);
+    font-size: 1.15rem;
+}
+
+.tsc-quick-icon.is-mint { background: #e6f8f1; color: #0a8f66; }
+.tsc-quick-icon.is-amber { background: #fdf3e0; color: #a8700a; }
+.tsc-quick-icon.is-rose { background: #fdecef; color: #b81238; }
+
+/* ---------- Empty state ---------- */
+.tsc-empty {
+    text-align: center;
+    padding: 2.5rem 1.25rem;
+    border-radius: var(--tsc-radius);
+    background: var(--tsc-card);
+    border: 1px dashed var(--tsc-line);
+}
+
+.tsc-empty i { font-size: 2rem; color: var(--tsc-muted); display: block; margin-bottom: .6rem; }
+
+/* ---------- Filter bar ---------- */
+.tsc-filterbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    align-items: center;
+    margin-bottom: 1.1rem;
+}
+
+.tsc-search { position: relative; flex: 1 1 14rem; min-width: 0; }
+
+.tsc-search i {
+    position: absolute;
+    left: .8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--tsc-muted);
+    pointer-events: none;
+}
+
+.tsc-search .form-control { padding-left: 2.3rem; }
+
+.tsc-chips { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+.tsc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .45rem .8rem;
+    border-radius: 2rem;
+    border: 1px solid var(--tsc-line);
+    background: var(--tsc-card);
+    color: var(--tsc-muted);
+    font-size: .85rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.tsc-chip:hover { border-color: rgba(37, 99, 235, .35); color: var(--tsc-brand-700); }
+
+.tsc-chip.active {
+    background: var(--tsc-brand);
+    border-color: var(--tsc-brand);
+    color: #fff;
+}
+
+.tsc-chip-count {
+    font-size: .72rem;
+    padding: .05rem .4rem;
+    border-radius: 1rem;
+    background: rgba(13, 27, 48, .08);
+}
+
+.tsc-chip.active .tsc-chip-count { background: rgba(255, 255, 255, .25); }
+
+/* ======================================================================
+   CREDENTIALS
+   ====================================================================== */
+
+.tsc-cred-list { display: flex; flex-direction: column; gap: .7rem; }
+
+.tsc-cred {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    padding: .9rem;
+    border-radius: var(--tsc-radius);
+    background: var(--tsc-card);
+    border: 1px solid var(--tsc-line);
+    box-shadow: var(--tsc-shadow-sm);
+}
+
+.tsc-cred-who { display: flex; align-items: center; gap: .7rem; min-width: 0; }
+
+.tsc-cred-avatar {
+    width: 2.4rem;
+    height: 2.4rem;
+    flex: 0 0 auto;
+    border-radius: .7rem;
+    display: grid;
+    place-items: center;
+    background: var(--tsc-brand-soft);
+    color: var(--tsc-brand-700);
+    font-weight: 700;
+}
+
+.tsc-cred-avatar.is-teacher { background: #fdf3e0; color: #a8700a; }
+
+.tsc-cred-name { font-weight: 650; color: var(--tsc-navy); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tsc-cred-meta { font-size: .78rem; color: var(--tsc-muted); }
+
+.tsc-cred-fields { display: flex; flex-direction: column; gap: .5rem; min-width: 0; }
+
+.tsc-cred-field {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: .4rem .6rem;
+    border-radius: .6rem;
+    background: var(--tsc-shade);
+    border: 1px solid var(--tsc-line);
+}
+
+.tsc-cred-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--tsc-muted);
     flex: 0 0 auto;
 }
 
-.tsc-role {
-    font-size: .6875rem;
+.tsc-cred-field code {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: .9rem;
     font-weight: 600;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--tsc-accent);
+    color: var(--tsc-navy);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* ---------- Cards ---------- */
+/* Hidden passwords keep the row the same width as a revealed one, so the layout does not
+   jump every time someone clicks the eye. */
+.tsc-secret { letter-spacing: .1em; }
+.tsc-secret.is-revealed { letter-spacing: normal; color: var(--tsc-brand-700); }
+
+.tsc-icon-btn {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 auto;
+    border: 1px solid var(--tsc-line);
+    border-radius: .5rem;
+    background: #fff;
+    color: var(--tsc-muted);
+    font-size: .85rem;
+}
+
+.tsc-icon-btn:hover { color: var(--tsc-brand-600); border-color: rgba(37, 99, 235, .35); }
+
+.tsc-cred-actions { display: flex; gap: .4rem; }
+
+/* Desktop lays one credential out as a single row: who, then the two fields filling the
+   space between, then the actions pinned right. Declared after the base rules above, not
+   before -- same specificity, so whichever comes last wins. */
+@media (min-width: 992px) {
+    .tsc-cred { flex-direction: row; align-items: center; gap: 1rem; }
+    .tsc-cred-who { flex: 0 0 15rem; }
+    .tsc-cred-fields { flex: 1 1 auto; flex-direction: row; align-items: stretch; gap: .6rem; }
+    .tsc-cred-actions { flex: 0 0 auto; margin-left: auto; }
+}
+
+/* The one-time banner shown straight after a login is created. */
+.tsc-newlogin {
+    border-radius: var(--tsc-radius);
+    padding: 1rem;
+    margin-bottom: 1.1rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--tsc-navy) 0%, var(--tsc-navy-700) 100%);
+    box-shadow: var(--tsc-shadow);
+}
+
+.tsc-newlogin a { color: #fff; text-decoration: underline; }
+.tsc-newlogin .tsc-cred-field { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .18); }
+.tsc-newlogin .tsc-cred-label { color: rgba(255, 255, 255, .6); }
+.tsc-newlogin .tsc-cred-field code { color: #fff; }
+.tsc-newlogin .tsc-icon-btn { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .2); color: #fff; }
+
+.tsc-newlogin-head {
+    display: flex;
+    align-items: start;
+    gap: .6rem;
+    margin-bottom: .9rem;
+}
+
+.tsc-newlogin-head i { font-size: 1.2rem; color: var(--tsc-accent); }
+
+/* ======================================================================
+   SIGN-IN
+   ====================================================================== */
+
+.tsc-auth {
+    min-height: 70vh;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem 0;
+}
+
+.tsc-auth-card {
+    width: 100%;
+    max-width: 25rem;
+    padding: 1.75rem 1.5rem;
+    border-radius: 1.25rem;
+    background: var(--tsc-card);
+    border: 1px solid var(--tsc-line);
+    box-shadow: var(--tsc-shadow-lg);
+}
+
+.tsc-auth-brand { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.5rem; }
+
+.tsc-auth-logo {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 auto;
+    border-radius: .75rem;
+    display: grid;
+    place-items: center;
+    background: var(--tsc-shade);
+    border: 1px solid var(--tsc-line);
+    padding: .3rem;
+}
+
+.tsc-auth-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.tsc-auth-title { font-weight: 700; color: var(--tsc-navy); line-height: 1.15; }
+.tsc-auth-sub { font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--tsc-muted); }
+
+.tsc-input-group .input-group-text { background: var(--tsc-shade); border-color: #cfd8e5; color: var(--tsc-muted); }
+
+/* ======================================================================
+   BOOTSTRAP COMPONENT OVERRIDES
+   ====================================================================== */
+
 .card {
     border: 1px solid var(--tsc-line);
-    border-radius: .875rem;
+    border-radius: var(--tsc-radius);
     background: var(--tsc-card);
+    box-shadow: var(--tsc-shadow-sm);
 }
 
-.card.shadow-sm {
-    box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 20px rgba(15, 23, 42, .05) !important;
-}
+.card.shadow-sm { box-shadow: var(--tsc-shadow-sm) !important; }
 
 a.card { transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease; }
 
 a.card:hover {
-    border-color: rgba(29, 78, 216, .35);
-    box-shadow: 0 2px 4px rgba(15, 23, 42, .05), 0 12px 28px rgba(15, 23, 42, .09) !important;
-    transform: translateY(-1px);
+    border-color: rgba(37, 99, 235, .35);
+    box-shadow: var(--tsc-shadow) !important;
+    transform: translateY(-2px);
 }
 
 .card-header {
     background: var(--tsc-shade);
     border-bottom: 1px solid var(--tsc-line);
-    padding: .75rem 1rem;
-    font-weight: 600;
+    border-radius: var(--tsc-radius) var(--tsc-radius) 0 0;
+    padding: .8rem 1rem;
+    font-weight: 650;
     color: var(--tsc-navy);
 }
 
@@ -225,25 +801,27 @@ a.card:hover {
 }
 
 .table > thead th {
-    font-size: .7rem;
-    font-weight: 650;
+    font-size: .68rem;
+    font-weight: 700;
     letter-spacing: .07em;
     text-transform: uppercase;
     color: var(--tsc-muted);
     background: var(--tsc-shade);
     border-bottom: 1px solid var(--tsc-line);
-    padding-top: .65rem;
-    padding-bottom: .65rem;
+    padding-top: .7rem;
+    padding-bottom: .7rem;
+    white-space: nowrap;
 }
 
-.table > tbody > tr > td { padding-top: .6rem; padding-bottom: .6rem; }
-.table-hover > tbody > tr:hover > * { --bs-table-bg-state: #eaf0f9; }
+.table > tbody > tr > td { padding-top: .65rem; padding-bottom: .65rem; vertical-align: middle; }
+.table-hover > tbody > tr:hover > * { --bs-table-bg-state: var(--tsc-brand-soft); }
 
 /* ---------- Buttons & controls ---------- */
 .btn {
-    --bs-btn-font-weight: 550;
-    --bs-btn-border-radius: .5rem;
-    --bs-btn-padding-x: .9rem;
+    --bs-btn-font-weight: 600;
+    --bs-btn-border-radius: .65rem;
+    --bs-btn-padding-x: .95rem;
+    --bs-btn-padding-y: .5rem;
 }
 
 .btn-primary {
@@ -255,66 +833,139 @@ a.card:hover {
     --bs-btn-active-border-color: var(--tsc-brand-700);
     --bs-btn-disabled-bg: var(--tsc-brand);
     --bs-btn-disabled-border-color: var(--tsc-brand);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, .08);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, .28);
 }
 
 .btn-outline-primary {
     --bs-btn-color: var(--tsc-brand-700);
-    --bs-btn-border-color: rgba(29, 78, 216, .4);
+    --bs-btn-border-color: rgba(37, 99, 235, .4);
     --bs-btn-hover-bg: var(--tsc-brand);
     --bs-btn-hover-border-color: var(--tsc-brand);
     --bs-btn-active-bg: var(--tsc-brand-700);
     --bs-btn-active-border-color: var(--tsc-brand-700);
 }
 
+.btn-secondary {
+    --bs-btn-bg: #fff;
+    --bs-btn-border-color: var(--tsc-line);
+    --bs-btn-color: var(--tsc-navy);
+    --bs-btn-hover-bg: var(--tsc-shade);
+    --bs-btn-hover-border-color: #cfd8e5;
+    --bs-btn-hover-color: var(--tsc-navy);
+}
+
 .form-control, .form-select {
     background-color: #fff;
     border-color: #cfd8e5;
-    border-radius: .5rem;
-    padding: .5rem .75rem;
+    border-radius: .65rem;
+    padding: .55rem .8rem;
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: rgba(29, 78, 216, .55);
+    border-color: rgba(37, 99, 235, .55);
     box-shadow: 0 0 0 .2rem var(--bs-focus-ring-color);
 }
 
-.form-label { font-weight: 550; font-size: .875rem; color: var(--tsc-navy); }
+.form-label { font-weight: 600; font-size: .85rem; color: var(--tsc-navy); margin-bottom: .35rem; }
 
-.btn:focus-visible, .btn-link.nav-link:focus-visible, .form-check-input:focus {
+.btn:focus-visible,
+.tsc-icon-btn:focus-visible,
+.tsc-menu-btn:focus-visible,
+.tsc-nav-link:focus-visible,
+.tsc-bottombar-link:focus-visible,
+.form-check-input:focus {
+    outline: none;
     box-shadow: 0 0 0 .2rem var(--bs-focus-ring-color);
 }
+
+.dropdown-menu {
+    border: 1px solid var(--tsc-line);
+    border-radius: .85rem;
+    padding: .375rem;
+    box-shadow: var(--tsc-shadow-lg);
+}
+
+.dropdown-item { border-radius: .55rem; padding: .5rem .65rem; font-size: .9rem; }
+.dropdown-item.active, .dropdown-item:active { background: var(--tsc-brand-soft); color: var(--tsc-brand-700); }
 
 /* ---------- Alerts & badges ---------- */
-.alert {
-    border: 1px solid transparent;
-    border-radius: .75rem;
+.alert { border: 1px solid transparent; border-radius: .85rem; }
+
+.alert-success { background: #e9f9f1; border-color: #bbe9d4; color: #0a6b45; }
+.alert-danger  { background: #fdeef0; border-color: #f6cbd2; color: #9a1230; }
+.alert-warning { background: #fff7e8; border-color: #f7ddad; color: #7a4d06; }
+.alert-info    { background: var(--tsc-brand-soft); border-color: #c6d8fd; color: #1b3fae; }
+.alert-secondary { background: var(--tsc-shade); border-color: var(--tsc-line); color: var(--tsc-muted); }
+
+/* A status pill for a row -- quieter than a badge, which here means "count" or "grade". */
+.tsc-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .25rem .6rem;
+    border-radius: 2rem;
+    border: 1px solid var(--tsc-line);
+    background: var(--tsc-shade);
+    color: var(--tsc-muted);
+    font-size: .75rem;
+    font-weight: 650;
+    white-space: nowrap;
 }
 
-.alert-success { background: #edfaf3; border-color: #bfe8d3; color: #14603c; }
-.alert-danger  { background: #fdf0f0; border-color: #f4ccd0; color: #8a1c2b; }
-.alert-warning { background: #fff8e9; border-color: #f6dfae; color: #7a4d06; }
-.alert-info    { background: #eff5ff; border-color: #c9dcfb; color: #16407f; }
+.tsc-pill.is-admin {
+    background: var(--tsc-brand-soft);
+    border-color: #c6d8fd;
+    color: var(--tsc-brand-700);
+}
 
-.badge { font-weight: 600; padding: .38em .6em; border-radius: .4rem; }
+.badge { font-weight: 650; padding: .4em .65em; border-radius: .5rem; }
+.badge.bg-success { background: #0a8f66 !important; }
+.badge.bg-danger { background: var(--tsc-rose) !important; }
 
-/* ---------- Landing page ---------- */
+/* ======================================================================
+   PUBLIC PAGES (signed out)
+   ====================================================================== */
+
+.tsc-public-bar {
+    background: linear-gradient(100deg, var(--tsc-navy) 0%, var(--tsc-navy-700) 100%);
+    padding: .75rem 0;
+    padding-top: calc(.75rem + env(safe-area-inset-top));
+}
+
+.tsc-public-bar .tsc-sidebar-brand { padding: 0; }
+.tsc-public-main { padding: 1.5rem 0 2.5rem; min-height: 60vh; }
+
 .tsc-hero {
     background:
-        radial-gradient(1100px 420px at 88% -8%, rgba(59, 130, 246, .45), transparent 60%),
-        linear-gradient(130deg, var(--tsc-navy) 0%, var(--tsc-navy-700) 62%, #23508f 100%);
+        radial-gradient(70rem 26rem at 88% -8%, rgba(109, 77, 246, .55), transparent 60%),
+        linear-gradient(130deg, var(--tsc-navy) 0%, var(--tsc-navy-700) 62%, #27589b 100%);
     color: #fff;
     border-radius: 1.25rem;
-    padding: 3.25rem 2.25rem;
+    padding: 2rem 1.25rem;
+    box-shadow: var(--tsc-shadow-lg);
 }
 
-.tsc-hero h1 { color: #fff; font-size: clamp(1.9rem, 4vw, 2.75rem); }
-.tsc-hero .lead { color: rgba(255, 255, 255, .78); }
+.tsc-hero h1 { color: #fff; font-size: clamp(1.75rem, 5vw, 2.75rem); }
+.tsc-hero .lead { color: rgba(255, 255, 255, .8); }
+
+@media (min-width: 768px) {
+    .tsc-hero { padding: 3.25rem 2.25rem; }
+}
+
+.tsc-hero-logo {
+    background: #fff;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    display: inline-block;
+    box-shadow: 0 10px 30px rgba(8, 17, 32, .3);
+}
+
+.tsc-hero-logo img { width: 10rem; max-width: 100%; }
 
 .tsc-eyebrow {
     display: inline-block;
-    font-size: .6875rem;
-    font-weight: 650;
+    font-size: .68rem;
+    font-weight: 700;
     letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--tsc-accent);
@@ -322,24 +973,23 @@ a.card:hover {
 }
 
 .tsc-feature-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: .65rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: .75rem;
     display: grid;
     place-items: center;
-    background: rgba(29, 78, 216, .1);
-    color: var(--tsc-brand-700);
-    font-size: 1.15rem;
+    background: var(--tsc-brand-soft);
+    color: var(--tsc-brand-600);
+    font-size: 1.25rem;
     margin-bottom: .75rem;
 }
 
-/* ---------- Footer ---------- */
 .tsc-footer {
     background: var(--tsc-navy);
-    border-top: 1px solid var(--tsc-navy-700);
     color: rgba(255, 255, 255, .6);
-    font-size: .875rem;
+    font-size: .85rem;
     padding: 1.15rem 0;
+    padding-bottom: calc(1.15rem + env(safe-area-inset-bottom));
     margin-top: 2.5rem;
 }
 
@@ -356,42 +1006,12 @@ a.card:hover {
     text-align: start;
 }
 
-/* ---------- Printing ----------
-   Report cards and fee receipts go home with the student, so the on-screen chrome is
-   dropped and the sheet is left to fill the page. */
-.tsc-sheet { background: #fff; }
+/* ======================================================================
+   ROLL CALL
+   Taken one-handed on a phone while calling names, so the tap targets are thumb sized.
+   ====================================================================== */
 
-@media print {
-    .tsc-navbar, .tsc-footer, .no-print, .alert, .btn { display: none !important; }
-
-    body {
-        background: #fff;
-        font-size: 12pt;
-    }
-
-    main { padding: 0 !important; }
-    .container { max-width: none; padding: 0; }
-
-    .card, .tsc-sheet {
-        border: none !important;
-        box-shadow: none !important;
-        background: #fff !important;
-    }
-
-    .card-body { padding: 0; }
-    .table > thead th { background: #fff; color: #000; }
-    .badge { border: 1px solid #999; color: #000 !important; background: #fff !important; }
-
-    a { text-decoration: none; color: #000; }
-}
-
-/* ---------- Roll call ----------
-   Taken one-handed on a phone while calling names, so the tap targets are thumb sized. */
-.tsc-roll-bar {
-    position: sticky;
-    top: 4.25rem;
-    z-index: 5;
-}
+.tsc-roll-bar { position: sticky; top: 3.75rem; z-index: 5; }
 
 .tsc-roll-row {
     display: flex;
@@ -401,22 +1021,14 @@ a.card:hover {
     background: var(--tsc-card);
 }
 
-.tsc-roll-row.is-present {
-    background: #edfaf3;
-    border-left: 4px solid #1a9e63;
-}
+.tsc-roll-row.is-present { background: #e9f9f1; border-left: 4px solid #0a8f66; }
 
-.tsc-roll-name {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-weight: 550;
-    line-height: 1.25;
-}
+.tsc-roll-name { flex: 1 1 auto; min-width: 0; font-weight: 600; line-height: 1.25; }
 
 .tsc-roll-btn {
     min-width: 7rem;
     min-height: 2.9rem;
-    font-weight: 600;
+    font-weight: 650;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -432,12 +1044,12 @@ a.card:hover {
     .tsc-roll-btn i { font-size: 1.35rem; }
 }
 
-/* ---------- Small screens ----------
-   The office runs this from a phone: roll call in the classroom, a fee check at the desk,
-   a result looked up while a guardian waits. */
+/* ======================================================================
+   SMALL SCREENS
+   ====================================================================== */
 
-/* Wide tables scroll sideways instead of squashing. Turning the table itself into the
-   scroll box means every table gets this, not only the ones wrapped in .table-responsive. */
+/* Wide tables scroll sideways instead of squashing. Turning the table itself into the scroll
+   box means every table gets this, not only the ones wrapped in .table-responsive. */
 @media (max-width: 991.98px) {
     .card-body > .table,
     .card > .table,
@@ -448,48 +1060,320 @@ a.card:hover {
     }
 
     .table > thead th,
-    .table > tbody > tr > td {
-        padding-left: .5rem;
-        padding-right: .5rem;
-    }
+    .table > tbody > tr > td { padding-left: .5rem; padding-right: .5rem; }
 }
 
 @media (max-width: 767.98px) {
     .container { padding-left: .85rem; padding-right: .85rem; }
 
-    main { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-
-    h1, .h1 { font-size: 1.35rem; }
-    h2, .h2 { font-size: 1.2rem; }
-    .display-6 { font-size: 1.6rem; }
-
-    .card-body { padding: .85rem; }
-    .card-header { padding: .6rem .85rem; }
+    .card-body { padding: .9rem; }
+    .card-header { padding: .65rem .9rem; }
 
     .table { font-size: .875rem; }
 
-    /* Toolbar buttons in a page header wrap into their own row and stay tappable. */
-    .btn { --bs-btn-padding-y: .45rem; }
-    .btn-sm { --bs-btn-padding-y: .35rem; }
-
-    .tsc-hero { padding: 2rem 1.25rem; border-radius: 1rem; }
-    .tsc-footer { text-align: center; }
+    .btn { --bs-btn-padding-y: .5rem; }
+    .btn-sm { --bs-btn-padding-y: .4rem; }
 
     /* iOS zooms the page in when a focused field is under 16px. */
     .form-control, .form-select { font-size: 16px; }
 
-    /* A long admin menu must not run off the bottom of a phone. */
-    .tsc-navbar .navbar-collapse {
-        max-height: 75vh;
-        overflow-y: auto;
-        margin-top: .5rem;
-    }
-
-    .tsc-roll-bar { top: 3.9rem; }
+    /* Toolbar buttons that were laid out side by side get breathing room once they wrap. */
+    .tsc-page-head .btn { width: auto; }
 }
 
 /* Action buttons stacked in a table cell need air between them once they wrap. */
 .table td > .btn,
-.table td > form {
-    margin-bottom: .15rem;
+.table td > form { margin-bottom: .15rem; }
+
+/* ======================================================================
+   PRINTING
+   Report cards and fee receipts go home with the student, so the on-screen chrome is
+   dropped and the sheet is left to fill the page.
+   ====================================================================== */
+
+.tsc-sheet { background: #fff; }
+
+@media print {
+    .tsc-sidebar, .tsc-topbar, .tsc-bottombar, .tsc-scrim, .tsc-footer, .tsc-public-bar,
+    .no-print, .alert, .tsc-newlogin, .btn, .tsc-filterbar { display: none !important; }
+
+    body { background: #fff; font-size: 12pt; }
+
+    .tsc-main { margin-left: 0 !important; }
+    .tsc-content { padding: 0 !important; max-width: none; }
+    .container { max-width: none; padding: 0; }
+
+    .card, .tsc-sheet, .tsc-cred {
+        border: none !important;
+        box-shadow: none !important;
+        background: #fff !important;
+    }
+
+    .card-body { padding: 0; }
+    .table > thead th { background: #fff; color: #000; }
+    .badge { border: 1px solid #999; color: #000 !important; background: #fff !important; }
+
+    a { text-decoration: none; color: #000; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .001ms !important;
+        transition-duration: .001ms !important;
+    }
+}
+
+/* ======================================================================
+   REPORT CARD
+   This is the one thing from the system a family keeps. It gets a ruled frame, the centre's
+   logo as a watermark and typography of its own, so it reads as a document the centre issued
+   rather than a web page somebody printed. Kept in step with Data/ReportCardDocument.cs,
+   which renders the same sheet as the downloadable PDF.
+   ====================================================================== */
+
+.tsc-report {
+    background: #fff;
+    border: 2px solid var(--tsc-gold, #b4883b);
+    border-radius: 2px;
+    padding: 4px;
+    box-shadow: var(--tsc-shadow);
+}
+
+.tsc-report-inner {
+    position: relative;
+    border: 1px solid var(--tsc-line);
+    padding: 1.5rem 1.25rem;
+    /* The watermark is a pre-faded asset rather than an opacity on the live logo: print
+       engines routinely drop opacity, and a watermark that vanishes on paper is no watermark. */
+    background-image: url("../img/tsc-watermark.png");
+    background-repeat: no-repeat;
+    background-position: center 48%;
+    background-size: min(60%, 22rem);
+}
+
+@media (min-width: 768px) {
+    .tsc-report-inner { padding: 2.25rem 2rem; }
+}
+
+/* ---------- Masthead ---------- */
+.tsc-report-head {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--tsc-gold, #b4883b);
+    margin-bottom: 1.1rem;
+}
+
+.tsc-report-logo { width: 3.4rem; flex: 0 0 auto; }
+.tsc-report-ident { flex: 1 1 auto; min-width: 0; }
+
+.tsc-report-name {
+    font-size: 1.15rem;
+    font-weight: 750;
+    letter-spacing: -.02em;
+    color: var(--tsc-navy);
+    line-height: 1.2;
+}
+
+.tsc-report-tag {
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--tsc-muted);
+}
+
+.tsc-report-meta { text-align: right; flex: 0 0 auto; }
+
+.tsc-report-kicker {
+    font-size: .64rem;
+    font-weight: 750;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #b4883b;
+}
+
+.tsc-report-exam { font-size: .9rem; font-weight: 650; color: var(--tsc-navy); }
+.tsc-report-date { font-size: .72rem; color: var(--tsc-muted); }
+
+/* ---------- Student panel ---------- */
+.tsc-report-student {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 1.5rem;
+    background: rgba(247, 249, 253, .82);
+    border: 1px solid var(--tsc-line);
+    padding: .8rem .9rem;
+    margin-bottom: 1.1rem;
+}
+
+@media (min-width: 576px) {
+    .tsc-report-student { grid-template-columns: 1fr 1fr; }
+}
+
+.tsc-report-student dl {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: .25rem .5rem;
+    margin: 0;
+}
+
+.tsc-report-student dt {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--tsc-muted);
+    align-self: center;
+}
+
+.tsc-report-student dd { margin: 0; font-size: .875rem; font-weight: 600; color: var(--tsc-navy); }
+.tsc-report-student dd.is-strong { font-size: 1rem; font-weight: 700; }
+
+/* ---------- Marks ---------- */
+.tsc-report-table { width: 100%; border-collapse: collapse; margin-bottom: 1.1rem; }
+
+.tsc-report-table thead th {
+    background: var(--tsc-navy);
+    color: #fff;
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .5rem .55rem;
+    white-space: nowrap;
+}
+
+.tsc-report-table tbody td {
+    padding: .45rem .55rem;
+    border-bottom: 1px solid var(--tsc-line);
+    font-size: .875rem;
+    vertical-align: middle;
+}
+
+.tsc-report-table tbody tr:nth-child(even) td { background: rgba(251, 252, 254, .8); }
+
+.tsc-report-sub { display: block; font-size: .68rem; color: var(--tsc-muted); font-weight: 400; }
+.tsc-report-absent { color: #b91c1c; }
+
+.tsc-report-table tfoot td {
+    border-top: 2px solid var(--tsc-navy);
+    background: rgba(238, 243, 251, .9);
+    padding: .55rem;
+    font-weight: 750;
+    font-size: .9rem;
+}
+
+.tsc-grade {
+    display: inline-block;
+    min-width: 2.1rem;
+    padding: .1rem .4rem;
+    border-radius: .35rem;
+    border: 1px solid currentColor;
+    font-size: .75rem;
+    font-weight: 750;
+}
+
+.tsc-grade-success { color: #0a8f66; }
+.tsc-grade-primary { color: var(--tsc-brand-700); }
+.tsc-grade-warning { color: #a8700a; }
+.tsc-grade-danger  { color: #b91c1c; }
+
+/* ---------- Summary ---------- */
+.tsc-report-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .6rem;
+}
+
+@media (min-width: 768px) {
+    .tsc-report-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.tsc-report-stat {
+    border: 1px solid var(--tsc-line);
+    background: rgba(255, 255, 255, .85);
+    padding: .6rem .7rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.tsc-report-stat-label {
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--tsc-muted);
+}
+
+.tsc-report-stat-value { font-size: 1.3rem; font-weight: 750; color: var(--tsc-navy); line-height: 1.25; }
+.tsc-report-stat-note { font-size: .68rem; color: var(--tsc-muted); }
+
+/* ---------- Signatures ---------- */
+.tsc-report-sign {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+@media (min-width: 576px) {
+    .tsc-report-sign { grid-template-columns: 2fr 1fr 1fr; gap: 1.25rem; align-items: end; }
+}
+
+.tsc-report-remark { display: flex; flex-direction: column; }
+.tsc-report-rule { border-bottom: 1px solid var(--tsc-line); height: 1.6rem; }
+
+.tsc-report-signature {
+    border-top: 1px solid var(--tsc-navy);
+    padding-top: .3rem;
+    text-align: center;
+    font-size: .72rem;
+    color: var(--tsc-muted);
+}
+
+.tsc-report-foot {
+    margin-top: 1.5rem;
+    padding-top: .6rem;
+    border-top: 1px solid var(--tsc-line);
+    font-size: .66rem;
+    color: var(--tsc-muted);
+    text-align: center;
+}
+
+/* On paper the frame, the watermark and the table fills have to survive the browser's
+   habit of stripping backgrounds to save ink. */
+@media print {
+    .tsc-report {
+        border-color: #b4883b !important;
+        box-shadow: none !important;
+        padding: 3px;
+    }
+
+    .tsc-report,
+    .tsc-report-inner,
+    .tsc-report-table thead th,
+    .tsc-report-table tfoot td,
+    .tsc-report-student,
+    .tsc-report-stat {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .tsc-report-inner { padding: 1.5rem; }
+    .tsc-report-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .tsc-report-sign { grid-template-columns: 2fr 1fr 1fr; }
+    .tsc-report-table { page-break-inside: auto; }
+    .tsc-report-table tr { page-break-inside: avoid; }
+}
+
+/* Several buttons in one table cell. Inline forms wrap into a staircase; a flex row keeps
+   them on one line where there is room and in tidy rows where there isn't. */
+.tsc-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.tsc-row-actions > form { margin: 0; }

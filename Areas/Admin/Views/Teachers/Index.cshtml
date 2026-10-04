@@ -2,16 +2,32 @@
 
 @{
     ViewData["Title"] = "Teachers";
+
+    var adminIds = (HashSet<string>)ViewBag.AdminUserIds;
+    var adminCount = (int)ViewBag.AdminCount;
+    var myUserId = ViewBag.MyUserId as string;
 }
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+<div class="tsc-page-head">
     <div>
         <h1>Teachers</h1>
-        <p class="text-muted mb-0">Manage teaching staff and see what each one teaches.</p>
+        <p class="text-muted mb-0">Manage teaching staff, what each one teaches, and who runs the office.</p>
     </div>
 
     <a asp-action="Create" class="btn btn-primary">+ Add Teacher</a>
 </div>
+
+@if (adminCount < 2)
+{
+    <div class="alert alert-warning d-flex align-items-start gap-2">
+        <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+        <div>
+            <strong>Only one admin.</strong> If that person is away or loses their password,
+            nobody can take fees, call the roll or publish results. Make a second teacher an
+            admin with the <span class="badge bg-secondary">Make admin</span> button below.
+        </div>
+    </div>
+}
 
 <div class="card shadow-sm">
     <div class="card-body">
@@ -32,6 +48,7 @@
                         <tr>
                             <th>Teacher ID</th>
                             <th>Name</th>
+                            <th>Role</th>
                             <th>Specialization</th>
                             <th>Phone</th>
                             <th>Teaches</th>
@@ -41,9 +58,30 @@
                     <tbody>
                         @foreach (var teacher in Model)
                         {
+                            var isAdmin = teacher.UserId != null && adminIds.Contains(teacher.UserId);
+                            var isMe = teacher.UserId != null && teacher.UserId == myUserId;
+
                             <tr>
                                 <td><strong>@teacher.TeacherId</strong></td>
-                                <td>@teacher.FullName</td>
+                                <td>
+                                    @teacher.FullName
+                                    @if (isMe)
+                                    {
+                                        <span class="text-muted small">(you)</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (isAdmin)
+                                    {
+                                        <span class="tsc-pill is-admin">
+                                            <i class="bi bi-shield-check"></i>Admin &amp; teacher
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="tsc-pill">Teacher</span>
+                                    }
+                                </td>
                                 <td>@teacher.Specialization</td>
                                 <td>@teacher.Phone</td>
                                 <td>
@@ -61,45 +99,88 @@
                                         }
                                     }
                                 </td>
-                                <td class="text-end">
-                                    @if (teacher.UserId != null)
+                                @* Only the decision this page exists for stays on the row. Five
+                                   buttons in a table cell wrapped into a ragged staircase, so
+                                   the housekeeping lives behind a menu. *@
+                                <td>
+                                    <div class="tsc-row-actions">
+                                    @if (teacher.UserId == null)
                                     {
-                                        <span class="badge bg-success me-1">Login</span>
-
-                                        <form asp-action="ResetLogin" asp-route-id="@teacher.Id" method="post"
-                                              class="d-inline"
-                                              onsubmit="return confirm('Issue a new password for @teacher.FullName? The old one stops working.');">
-                                            <button type="submit" class="btn btn-sm btn-outline-primary" title="Issue a new password">
-                                                <i class="bi bi-key"></i> New password
+                                        <form asp-action="CreateLogin" asp-route-id="@teacher.Id" method="post">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary"
+                                                    title="Signs in with Teacher ID @teacher.TeacherId">
+                                                <i class="bi bi-person-plus"></i> Create login
                                             </button>
                                         </form>
-
-                                        <form asp-action="RemoveLogin" asp-route-id="@teacher.Id" method="post"
-                                              class="d-inline"
-                                              onsubmit="return confirm('Remove this login?');">
-                                            <button type="submit" class="btn btn-sm btn-outline-warning">Unlink</button>
-                                        </form>
                                     }
-                                    else if (!string.IsNullOrWhiteSpace(teacher.Email))
+                                    else if (isAdmin)
                                     {
-                                        <form asp-action="CreateLogin" asp-route-id="@teacher.Id" method="post"
-                                              class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-outline-primary">Create login</button>
+                                        <form asp-action="RemoveAdmin" asp-route-id="@teacher.Id" method="post"
+                                              onsubmit="return confirm('Take admin away from @teacher.FullName? They keep their teaching pages but lose the office.');">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning"
+                                                    title="Remove office access, keep teaching access">
+                                                <i class="bi bi-shield-slash"></i> Remove admin
+                                            </button>
                                         </form>
                                     }
                                     else
                                     {
-                                        <span class="text-muted small me-1" title="Add an email first">No email</span>
+                                        <form asp-action="MakeAdmin" asp-route-id="@teacher.Id" method="post"
+                                              onsubmit="return confirm('Make @teacher.FullName an admin? They will be able to manage students, fees, exams, notices and logins.');">
+                                            <button type="submit" class="btn btn-sm btn-outline-success"
+                                                    title="Give this teacher the whole office as well">
+                                                <i class="bi bi-shield-plus"></i> Make admin
+                                            </button>
+                                        </form>
                                     }
 
-                                    <a asp-action="Edit" asp-route-id="@teacher.Id"
-                                       class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button"
+                                                data-bs-toggle="dropdown" aria-expanded="false"
+                                                aria-label="More actions for @teacher.FullName">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
 
-                                    <form asp-action="Delete" asp-route-id="@teacher.Id" method="post"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Delete @teacher.FullName?');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                    </form>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" asp-action="Edit" asp-route-id="@teacher.Id">
+                                                    <i class="bi bi-pencil me-2"></i>Edit details
+                                                </a>
+                                            </li>
+
+                                            @if (teacher.UserId != null)
+                                            {
+                                                <li>
+                                                    <form asp-action="ResetLogin" asp-route-id="@teacher.Id" method="post"
+                                                          onsubmit="return confirm('Issue a new password for @teacher.FullName? The old one stops working.');">
+                                                        <button type="submit" class="dropdown-item">
+                                                            <i class="bi bi-key me-2"></i>New password
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="RemoveLogin" asp-route-id="@teacher.Id" method="post"
+                                                          onsubmit="return confirm('Remove @teacher.FullName\'s login? They lose access to the portal.');">
+                                                        <button type="submit" class="dropdown-item">
+                                                            <i class="bi bi-link-45deg me-2"></i>Remove login
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            }
+
+                                            <li><hr class="dropdown-divider" /></li>
+
+                                            <li>
+                                                <form asp-action="Delete" asp-route-id="@teacher.Id" method="post"
+                                                      onsubmit="return confirm('Delete @teacher.FullName?');">
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash me-2"></i>Delete teacher
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    </div>
                                 </td>
                             </tr>
                         }

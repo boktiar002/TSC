@@ -23,7 +23,7 @@ public class StudentsController : Controller
     // POST: /Admin/Students/CreateLogin/5  -- give this student a portal account
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateLogin(int id, string? email)
+    public async Task<IActionResult> CreateLogin(int id)
     {
         var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == id);
 
@@ -36,10 +36,11 @@ public class StudentsController : Controller
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        var address = string.IsNullOrWhiteSpace(email) ? student.Email : email.Trim();
-
+        // The Student ID is the login ID. No email is asked for: most students here do not
+        // have one, and having to invent an address just to open an account was the thing
+        // stopping logins from being created at all.
         var (user, password, error) = await LoginProvisioning.CreateAsync(
-            _users, address ?? "", student.FullName, "Student");
+            _users, student.StudentId, student.FullName, "Student", student.Email);
 
         if (error != null)
         {
@@ -48,11 +49,9 @@ public class StudentsController : Controller
         }
 
         student.UserId = user!.Id;
-        student.Email ??= address;
         await _context.SaveChangesAsync();
 
-        // Shown once and never recoverable: the admin reads it out, then it is gone.
-        TempData["NewLogin"] = $"{address}|{password}";
+        TempData["NewLogin"] = $"{student.StudentId}|{password}";
         TempData["Success"] = $"Login created for {student.FullName}.";
 
         return RedirectToAction(nameof(Details), new { id });
@@ -76,7 +75,7 @@ public class StudentsController : Controller
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        TempData["NewLogin"] = $"{user!.Email}|{password}";
+        TempData["NewLogin"] = $"{user!.UserName}|{password}";
         TempData["Success"] = $"New password issued for {student.FullName}.";
 
         return RedirectToAction(nameof(Details), new { id });
@@ -162,6 +161,10 @@ public class StudentsController : Controller
 
         if (student == null)
             return NotFound();
+
+        // The account itself, so the page can show the login ID and password back rather
+        // than only being able to issue a new one.
+        ViewBag.Login = student.UserId == null ? null : await _users.FindByIdAsync(student.UserId);
 
         return View(student);
     }

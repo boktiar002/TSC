@@ -12,9 +12,13 @@ public class ExamsController : Controller
 {
     private readonly ApplicationDbContext _context;
 
-    public ExamsController(ApplicationDbContext context)
+    // For the logo on the PDF report card, which is read off disk rather than over HTTP.
+    private readonly IWebHostEnvironment _environment;
+
+    public ExamsController(ApplicationDbContext context, IWebHostEnvironment environment)
     {
         _context = context;
+        _environment = environment;
     }
 
     // GET: /Admin/Exams
@@ -293,9 +297,35 @@ public class ExamsController : Controller
 
     // GET: /Admin/Exams/ReportCard/5?examIds=3&examIds=4
     // One student's sheet, laid out to be printed and sent home with them.
+    public async Task<IActionResult> ReportCard(int id, int[]? examIds)
+    {
+        var card = await BuildReportCardAsync(id, examIds);
+
+        return card == null ? NotFound() : View(card);
+    }
+
+    // GET: /Admin/Exams/ReportCardPdf/5?examIds=3
+    // The same card as a file. The printed sheet goes home in a bag and gets lost; the PDF is
+    // what gets sent to a guardian's phone and kept.
+    public async Task<IActionResult> ReportCardPdf(int id, int[]? examIds)
+    {
+        var card = await BuildReportCardAsync(id, examIds);
+
+        if (card == null)
+            return NotFound();
+
+        var bytes = ReportCardDocument.Render(card, _environment.WebRootPath);
+
+        // The Student ID rather than the name: a Bangla filename survives the trip to a phone
+        // badly, and the ID is what the office files it under anyway.
+        var name = $"Report-{card.Student.StudentId}-{Clock.Today:yyyy-MM-dd}.pdf";
+
+        return File(bytes, "application/pdf", name);
+    }
+
     // Works for an archived student too: their marks, attendance and fees are kept, and the
     // report card is how the office reads them back.
-    public async Task<IActionResult> ReportCard(int id, int[]? examIds)
+    private async Task<ReportCardModel?> BuildReportCardAsync(int id, int[]? examIds)
     {
         var student = await _context.Students
             .IgnoreQueryFilters()
@@ -303,7 +333,7 @@ public class ExamsController : Controller
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
-            return NotFound();
+            return null;
 
         var exams = await _context.Exams
             .Where(e => e.SchoolClassId == student.SchoolClassId)
@@ -335,23 +365,24 @@ public class ExamsController : Controller
             .Where(p => p.StudentId == id && p.ForMonth == thisMonth)
             .SumAsync(p => (decimal?)p.Amount) ?? 0m;
 
-        ViewBag.Student = student;
-        ViewBag.Exams = exams;
-        ViewBag.Chosen = chosen;
-        ViewBag.Columns = columns;
-        ViewBag.Ranked = ranked;
-        ViewBag.ClassSize = ranked.Count;
-        ViewBag.AttendanceDays = attendance?.Days ?? 0;
-        ViewBag.AttendancePresent = attendance?.Present ?? 0;
-        ViewBag.ThisMonth = thisMonth;
-        ViewBag.MonthlyFee = student.SchoolClass?.MonthlyFee ?? 0m;
-        ViewBag.PaidThisMonth = paid;
-
         // An archived student is not in the live ranking, so work their line out on its own.
         var row = ranked.FirstOrDefault(r => r.Student.Id == id)
             ?? await Ranking.RowForAsync(_context, student, chosen, columns);
 
-        return View(row);
+        return new ReportCardModel
+        {
+            Student = student,
+            Exams = exams,
+            Chosen = chosen,
+            Columns = columns,
+            Row = row,
+            ClassSize = ranked.Count,
+            AttendanceDays = attendance?.Days ?? 0,
+            AttendancePresent = attendance?.Present ?? 0,
+            ThisMonth = thisMonth,
+            MonthlyFee = student.SchoolClass?.MonthlyFee ?? 0m,
+            PaidThisMonth = paid,
+        };
     }
 
     private async Task<Exam?> LoadExam(int? id) =>

@@ -4,7 +4,7 @@
     ViewData["Title"] = "Student Details";
 }
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+<div class="tsc-page-head">
 
     <div>
         <h1>@Model.FullName</h1>
@@ -13,7 +13,7 @@
         </p>
     </div>
 
-    <div>
+    <div class="d-flex flex-wrap gap-2">
         <a asp-controller="Exams" asp-action="ReportCard" asp-route-id="@Model.Id"
            class="btn btn-outline-primary">
             <i class="bi bi-file-earmark-text me-1"></i>Report card
@@ -55,11 +55,11 @@
     </div>
 }
 
-<div class="row">
+<div class="row g-3 mb-3">
 
-    <div class="col-md-6 mb-4">
+    <div class="col-md-6">
 
-        <div class="card shadow-sm">
+        <div class="card h-100">
             <div class="card-header">
                 <strong>Academic Information</strong>
             </div>
@@ -99,9 +99,9 @@
 
     </div>
 
-    <div class="col-md-6 mb-4">
+    <div class="col-md-6">
 
-        <div class="card shadow-sm">
+        <div class="card h-100">
             <div class="card-header">
                 <strong>Contact Information</strong>
             </div>
@@ -141,9 +141,9 @@
 
     </div>
 
-    <div class="col-md-6 mb-4">
+    <div class="col-md-6">
 
-        <div class="card shadow-sm">
+        <div class="card h-100">
             <div class="card-header">
                 <strong>Guardian Information</strong>
             </div>
@@ -177,16 +177,52 @@
 
 </div>
 
-<div class="card shadow-sm">
+<div class="card">
     <div class="card-header"><strong>Portal login</strong></div>
     <div class="card-body">
 
         @if (Model.UserId != null)
         {
+            var login = ViewBag.Login as TSC.Models.ApplicationUser;
+
             <p class="mb-3">
                 <span class="badge bg-success">Active</span>
-                <span class="text-muted ms-2">@Model.Email</span>
             </p>
+
+            <div class="tsc-cred-fields mb-3">
+                <div class="tsc-cred-field">
+                    <span class="tsc-cred-label">Login ID</span>
+                    <code id="stuLoginId">@(login?.UserName ?? Model.StudentId)</code>
+                    <button type="button" class="tsc-icon-btn" data-copy="#stuLoginId"
+                            aria-label="Copy login ID">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+
+                <div class="tsc-cred-field">
+                    <span class="tsc-cred-label">Password</span>
+
+                    @if (login?.IssuedPassword == null)
+                    {
+                        <span class="text-muted small">
+                            Not stored &mdash; either the student changed it, or the account was
+                            made before passwords were kept. Issue a new one to see it here.
+                        </span>
+                    }
+                    else
+                    {
+                        <code class="tsc-secret" id="stuPw" data-secret="@login.IssuedPassword">••••••••</code>
+                        <button type="button" class="tsc-icon-btn" data-reveal="#stuPw"
+                                aria-label="Show password">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button type="button" class="tsc-icon-btn" data-copy-secret="#stuPw"
+                                aria-label="Copy password">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    }
+                </div>
+            </div>
 
             <form asp-action="ResetLogin" asp-route-id="@Model.Id" method="post" class="d-inline"
                   onsubmit="return confirm('Issue a new password? The old one stops working.');">
@@ -196,7 +232,7 @@
             </form>
 
             <form asp-action="RemoveLogin" asp-route-id="@Model.Id" method="post" class="d-inline"
-                  onsubmit="return confirm('Remove @Model.FullName's login? They will lose access to the portal.');">
+                  onsubmit="return confirm('Remove @Model.FullName\'s login? They will lose access to the portal.');">
                 <button type="submit" class="btn btn-sm btn-outline-danger">Remove login</button>
             </form>
         }
@@ -204,18 +240,14 @@
         {
             <p class="text-muted">
                 No login yet. Creating one lets @Model.FullName sign in to see their own
-                results, attendance and fees.
+                results, attendance and fees. They will sign in with their Student ID,
+                <code>@Model.StudentId</code> &mdash; no email address needed.
             </p>
 
-            <form asp-action="CreateLogin" asp-route-id="@Model.Id" method="post" class="row g-2">
-                <div class="col-sm-6">
-                    <input type="email" name="email" class="form-control"
-                           value="@Model.Email" placeholder="Email address" required />
-                </div>
-
-                <div class="col-sm-3">
-                    <button type="submit" class="btn btn-primary w-100">Create login</button>
-                </div>
+            <form asp-action="CreateLogin" asp-route-id="@Model.Id" method="post">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-person-plus me-1"></i>Create login
+                </button>
             </form>
         }
 

@@ -11,61 +11,98 @@
     var thisMonth = (DateOnly)ViewBag.ThisMonth;
     var examCount = (int)ViewBag.ExamCount;
     var notices = (IEnumerable<TSC.Models.Notice>)ViewBag.Notices;
+
+    var firstName = Model.FullName.Split(' ').FirstOrDefault() ?? Model.FullName;
 }
 
-<h1>@Model.FullName</h1>
-<p class="text-muted">@Model.StudentId &middot; @Model.SchoolClass?.Name</p>
-<hr />
-
-<div class="row">
-
-    <div class="col-md-4 mb-3">
-        <a asp-action="Attendance" class="card shadow-sm h-100 text-decoration-none text-dark">
-            <div class="card-body">
-                <h6 class="text-muted">Attendance</h6>
-                <p class="display-6 mb-0">@(rate == null ? "—" : $"{rate}%")</p>
-                <small class="text-muted">@daysRecorded day@(daysRecorded == 1 ? "" : "s") recorded</small>
-            </div>
-        </a>
+<section class="tsc-statpanel">
+    <div class="tsc-eyebrow">
+        @Model.StudentId
+        @if (Model.SchoolClass != null) { <text>&middot; @Model.SchoolClass.Name</text> }
+        @if (!string.IsNullOrWhiteSpace(Model.Batch)) { <text>&middot; @Model.Batch batch</text> }
     </div>
 
-    <div class="col-md-4 mb-3">
-        <a asp-action="Results" class="card shadow-sm h-100 text-decoration-none text-dark">
-            <div class="card-body">
-                <h6 class="text-muted">Exam results</h6>
-                <p class="display-6 mb-0">@examCount</p>
-                <small class="text-muted">exam@(examCount == 1 ? "" : "s") marked</small>
-            </div>
+    <h1 class="mb-1">Hello, @firstName</h1>
+    <p class="tsc-statpanel-sub mb-0">Your attendance, results and fees in one place.</p>
+
+    <div class="tsc-stats">
+        <a class="tsc-stat" asp-action="Attendance">
+            <div class="tsc-stat-value">@(rate == null ? "—" : $"{rate}%")</div>
+            <div class="tsc-stat-label">Attendance</div>
+        </a>
+
+        <a class="tsc-stat" asp-action="Results">
+            <div class="tsc-stat-value">@examCount</div>
+            <div class="tsc-stat-label">Exams marked</div>
+        </a>
+
+        <a class="tsc-stat" asp-action="Fees">
+            @if (fee <= 0)
+            {
+                <div class="tsc-stat-value">—</div>
+                <div class="tsc-stat-label">No fee set</div>
+            }
+            else if (due <= 0)
+            {
+                <div class="tsc-stat-value">Paid</div>
+                <div class="tsc-stat-label">@thisMonth.ToString("MMM") fees</div>
+            }
+            else
+            {
+                <div class="tsc-stat-value">@due.ToString("N0")</div>
+                <div class="tsc-stat-label">@thisMonth.ToString("MMM") due</div>
+            }
+        </a>
+
+        <a class="tsc-stat" asp-action="Attendance">
+            <div class="tsc-stat-value">@daysRecorded</div>
+            <div class="tsc-stat-label">Day@(daysRecorded == 1 ? "" : "s") recorded</div>
         </a>
     </div>
+</section>
 
-    <div class="col-md-4 mb-3">
-        <a asp-action="Fees" class="card shadow-sm h-100 text-decoration-none text-dark">
-            <div class="card-body">
-                <h6 class="text-muted">@thisMonth.ToString("MMMM") fees</h6>
-
-                @if (fee <= 0)
-                {
-                    <p class="display-6 mb-0">—</p>
-                    <small class="text-muted">no fee set</small>
-                }
-                else if (due <= 0)
-                {
-                    <p class="display-6 mb-0 text-success">Paid</p>
-                    <small class="text-muted">@paidThisMonth.ToString("0.##") received</small>
-                }
-                else
-                {
-                    <p class="display-6 mb-0 text-danger">@due.ToString("0.##")</p>
-                    <small class="text-muted">due of @fee.ToString("0.##")</small>
-                }
-            </div>
-        </a>
+@if (fee > 0 && due > 0)
+{
+    <div class="alert alert-warning d-flex align-items-start gap-2">
+        <i class="bi bi-exclamation-circle-fill mt-1"></i>
+        <div>
+            <strong>@due.ToString("0.##") still due</strong> for @thisMonth.ToString("MMMM")
+            @if (paidThisMonth > 0)
+            {
+                <text>&mdash; @paidThisMonth.ToString("0.##") of @fee.ToString("0.##") received.</text>
+            }
+            else
+            {
+                <text>(fee @fee.ToString("0.##")).</text>
+            }
+            <a asp-action="Fees" class="alert-link">See the fee record</a>.
+        </div>
     </div>
+}
 
+<div class="tsc-quick">
+    <a class="tsc-quick-link" asp-action="Results">
+        <span class="tsc-quick-icon"><i class="bi bi-graph-up-arrow"></i></span>
+        My results
+    </a>
+
+    <a class="tsc-quick-link" asp-action="Attendance">
+        <span class="tsc-quick-icon is-mint"><i class="bi bi-calendar2-check"></i></span>
+        My attendance
+    </a>
+
+    <a class="tsc-quick-link" asp-action="Fees">
+        <span class="tsc-quick-icon is-amber"><i class="bi bi-cash-coin"></i></span>
+        My fees
+    </a>
+
+    <a class="tsc-quick-link" asp-action="Notices">
+        <span class="tsc-quick-icon is-rose"><i class="bi bi-megaphone"></i></span>
+        Notices
+    </a>
 </div>
 
-<div class="card shadow-sm mt-2">
+<div class="card">
     <div class="card-header"><strong>Notices</strong></div>
     <div class="card-body">
         <partial name="_NoticeBoard" model="notices" />

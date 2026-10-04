@@ -177,6 +177,9 @@ namespace TSC.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("IssuedPassword")
+                        .HasColumnType("text");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
