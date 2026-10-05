@@ -7,12 +7,14 @@
 
 :root {
     /* Ink & brand */
-    --tsc-navy: #0b1b36;
+    --tsc-navy: #102133;
     --tsc-navy-700: #14305c;
     --tsc-brand: #2563eb;
     --tsc-brand-600: #1d4ed8;
     --tsc-brand-700: #1b3fae;
     --tsc-brand-soft: #eaf0fe;
+    /* The crest sits on its own warm ground, never on bare white. Taken off the logo. */
+    --tsc-cream: #fdfcf2;
     --tsc-accent: #f6a723;
     --tsc-mint: #10b981;
     --tsc-rose: #e11d48;
@@ -145,8 +147,8 @@ h3, .h3 { font-size: 1.05rem; }
     border-radius: .65rem;
     display: grid;
     place-items: center;
-    background: #fff;
-    padding: .22rem;
+    background: var(--tsc-cream);
+    padding: .18rem;
     box-shadow: 0 2px 8px rgba(8, 17, 32, .4);
 }
 
@@ -751,9 +753,9 @@ a.tsc-stat:hover { background: rgba(255, 255, 255, .22); color: #fff; }
     border-radius: .75rem;
     display: grid;
     place-items: center;
-    background: var(--tsc-shade);
-    border: 1px solid var(--tsc-line);
-    padding: .3rem;
+    background: var(--tsc-cream);
+    border: 1px solid rgba(16, 33, 51, .12);
+    padding: .25rem;
 }
 
 .tsc-auth-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -937,7 +939,7 @@ a.card:hover {
 
 .tsc-hero {
     background:
-        radial-gradient(70rem 26rem at 88% -8%, rgba(109, 77, 246, .55), transparent 60%),
+        radial-gradient(70rem 26rem at 88% -8%, rgba(37, 99, 235, .5), transparent 60%),
         linear-gradient(130deg, var(--tsc-navy) 0%, var(--tsc-navy-700) 62%, #27589b 100%);
     color: #fff;
     border-radius: 1.25rem;
@@ -953,9 +955,9 @@ a.card:hover {
 }
 
 .tsc-hero-logo {
-    background: #fff;
-    border-radius: 1rem;
-    padding: 1.25rem;
+    background: var(--tsc-cream);
+    border-radius: 1.25rem;
+    padding: 1.1rem;
     display: inline-block;
     box-shadow: 0 10px 30px rgba(8, 17, 32, .3);
 }
@@ -1165,7 +1167,7 @@ a.card:hover {
     margin-bottom: 1.1rem;
 }
 
-.tsc-report-logo { width: 3.4rem; flex: 0 0 auto; }
+.tsc-report-logo { width: 4.2rem; flex: 0 0 auto; }
 .tsc-report-ident { flex: 1 1 auto; min-width: 0; }
 
 .tsc-report-name {

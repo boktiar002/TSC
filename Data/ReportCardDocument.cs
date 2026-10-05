@@ -11,7 +11,7 @@ namespace TSC.Data;
 public static class ReportCardDocument
 {
     // Ink, matched to the web sheet.
-    private const string Navy = "#0b1b36";
+    private const string Navy = "#102133";
     private const string Brand = "#1d4ed8";
     private const string Muted = "#64748b";
     private const string Line = "#d9e1ee";
@@ -22,7 +22,7 @@ public static class ReportCardDocument
 
     // Pre-faded on disk rather than faded here: this QuestPDF has no opacity on an image, and
     // a one-off asset beats pulling in an imaging library to do at runtime what never changes.
-    // Regenerate it from tsc-logo.png if the logo is ever replaced.
+    // Replace the master artwork and run tools/make-logo-assets.ps1 to rebuild this.
     private static byte[]? _watermark;
 
     private static bool _ready;
@@ -124,7 +124,7 @@ public static class ReportCardDocument
             col.Item().Row(row =>
             {
                 if (_logo != null)
-                    row.ConstantItem(52).AlignMiddle().Image(_logo).FitWidth();
+                    row.ConstantItem(62).AlignMiddle().Image(_logo).FitWidth();
 
                 row.RelativeItem().PaddingLeft(10).Column(c =>
                 {
