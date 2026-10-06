@@ -6,8 +6,8 @@ public static class ConnectionString
 {
     // The connection string is typed into a hosting dashboard by hand, so it arrives with
     // whatever came along for the ride: a trailing newline, the quotes off a shell example,
-    // a leading space. Render, Heroku and Neon also hand the database out as a URL, which
-    // Npgsql cannot parse at all. Both end as the same opaque driver error --
+    // a leading space. Supabase, Render, Heroku and Neon also hand the database out as a URL,
+    // which Npgsql cannot parse at all. Both end as the same opaque driver error --
     // "Format of the initialization string does not conform to specification starting at
     // index 0" -- so clean the value up here and say something useful when it is hopeless.
     public static string Normalize(string value)
@@ -16,7 +16,16 @@ public static class ConnectionString
 
         try
         {
-            return cleaned.Contains("://") ? FromUrl(cleaned) : new NpgsqlConnectionStringBuilder(cleaned).ConnectionString;
+            var builder = cleaned.Contains("://")
+                ? FromUrl(cleaned)
+                : new NpgsqlConnectionStringBuilder(cleaned);
+
+            // Nothing here speaks Kerberos and the aspnet runtime image carries no krb5, so
+            // the default GSS probe only prints "Cannot load library libgssapi_krb5.so.2"
+            // into the deploy log, right above the error that actually matters.
+            builder.GssEncryptionMode = GssEncryptionMode.Disable;
+
+            return builder.ConnectionString;
         }
         catch (Exception e) when (e is ArgumentException or UriFormatException or IndexOutOfRangeException)
         {
@@ -27,7 +36,7 @@ public static class ConnectionString
         }
     }
 
-    private static string FromUrl(string url)
+    private static NpgsqlConnectionStringBuilder FromUrl(string url)
     {
         var uri = new Uri(url);
         var userInfo = uri.UserInfo.Split(':', 2);
@@ -37,12 +46,15 @@ public static class ConnectionString
             Host = uri.Host,
             Port = uri.Port < 0 ? 5432 : uri.Port,
             Username = Uri.UnescapeDataString(userInfo[0]),
+            // A URL carries the password percent-encoded. A password pasted in raw that
+            // happens to contain % @ : / # arrives here already mangled by Uri -- the
+            // 'Key=Value;' form has no escaping rules and is the safer thing to configure.
             Password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : null,
             Database = uri.AbsolutePath.TrimStart('/')
             // ponytail: SslMode left at Npgsql's default (Prefer) -- it negotiates TLS with
-            // Render and still works against a local server. Set it explicitly if a host
-            // ever needs VerifyFull.
-        }.ConnectionString;
+            // Supabase and Render and still works against a local server. Set it explicitly
+            // if a host ever needs VerifyFull.
+        };
     }
 
     // Enough of the value to recognise a stray quote, not enough to leak the password.

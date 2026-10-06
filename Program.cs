@@ -95,8 +95,11 @@ using (var scope = app.Services.CreateScope())
     // Where we actually ended up pointing, minus the password. When a deploy dies on the
     // database this is the line that says whether the connection string was the problem.
     var target = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
-    app.Logger.LogInformation("Postgres target: {Username}@{Host}:{Port}/{Database}",
-        target.Username, target.Host, target.Port, target.Database);
+    // The password length is here because a URL-form connection string silently mangles a
+    // password that was not percent-encoded, and "28P01 password authentication failed"
+    // looks identical whether the password is wrong or merely truncated at a '#'.
+    app.Logger.LogInformation("Postgres target: {Username}@{Host}:{Port}/{Database} (password: {Length} chars)",
+        target.Username, target.Host, target.Port, target.Database, target.Password?.Length ?? 0);
 
     // On a host there is no shell to run `dotnet ef database update` from, and the seeding
     // below needs the tables to exist. Migrating on startup is safe: EF only applies what

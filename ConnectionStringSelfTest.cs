@@ -41,9 +41,15 @@ internal static class ConnectionStringSelfTest
             Check(parsed.Password == "p");
         }
 
-        // Keyword form survives the same treatment and is otherwise untouched.
+        // Keyword form survives the same treatment and keeps every setting it was given.
         const string keywords = "Host=localhost;Database=tsc;Username=postgres;Password=x";
-        Check(ConnectionString.Normalize(keywords) == keywords);
+        var passthrough = new NpgsqlConnectionStringBuilder(ConnectionString.Normalize(keywords));
+        Check(passthrough.Host == "localhost" && passthrough.Database == "tsc");
+        Check(passthrough.Username == "postgres" && passthrough.Password == "x");
+
+        // The krb5 probe is off, so a deploy log does not open with a missing-library error.
+        Check(passthrough.GssEncryptionMode == GssEncryptionMode.Disable);
+        Check(render.GssEncryptionMode == GssEncryptionMode.Disable);
         Check(new NpgsqlConnectionStringBuilder(ConnectionString.Normalize($"  \"{keywords}\"\n")).Host == "localhost");
 
         // Hopeless input says so, instead of letting the driver's "index 0" through.
