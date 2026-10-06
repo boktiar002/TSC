@@ -92,6 +92,12 @@ app.MapControllerRoute(
 
 using (var scope = app.Services.CreateScope())
 {
+    // Where we actually ended up pointing, minus the password. When a deploy dies on the
+    // database this is the line that says whether the connection string was the problem.
+    var target = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
+    app.Logger.LogInformation("Postgres target: {Username}@{Host}:{Port}/{Database}",
+        target.Username, target.Host, target.Port, target.Database);
+
     // On a host there is no shell to run `dotnet ef database update` from, and the seeding
     // below needs the tables to exist. Migrating on startup is safe: EF only applies what
     // the database has not seen yet.

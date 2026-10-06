@@ -18,4 +18,4 @@ COPY --from=build /app/publish .
 EXPOSE 10000
 
 # Render injects PORT; 10000 is its default and what EXPOSE above documents.
-ENTRYPOINT ["sh", "-c", "ASPNETCORE_URLS=http://0.0.0.0:${PORT:-10000} exec dotnet TSC.dll"]
+ENTRYPOINT ["sh", "-c", "exec dotnet TSC.dll --urls http://0.0.0.0:${PORT:-10000}"]
