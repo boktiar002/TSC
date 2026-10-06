@@ -1,5 +1,6 @@
 using TSC.Data;
 using TSC.Models;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ if (args.Contains("selftest"))
     GradingSelfTest.Run();
     PhoneSelfTest.Run();
     ClockSelfTest.Run();
+    ConnectionStringSelfTest.Run();
     return 0;
 }
 
@@ -20,11 +22,15 @@ var builder = WebApplication.CreateBuilder(args);
 // password. Development reads it from user-secrets, deployment from the environment:
 //   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Password=..."
 //   ConnectionStrings__DefaultConnection=Host=...;Password=...
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+// Hosts that link a database automatically (Render, Heroku) set DATABASE_URL instead, in
+// URL form; ConnectionString.Normalize turns that into what Npgsql expects.
+var connectionString = ConnectionString.Normalize(
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? builder.Configuration["DATABASE_URL"]
     ?? throw new InvalidOperationException(
         "No 'DefaultConnection' connection string. Set it with `dotnet user-secrets set " +
         "\"ConnectionStrings:DefaultConnection\" \"<value>\"` or the " +
-        "ConnectionStrings__DefaultConnection environment variable. See README.md.");
+        "ConnectionStrings__DefaultConnection environment variable. See README.md."));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -43,10 +49,22 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.Configure<SecurityStampValidatorOptions>(options =>
     options.ValidationInterval = TimeSpan.Zero);
 
+// A host like Render terminates TLS at its edge and forwards plain HTTP. Without this the
+// app sees http, UseHttpsRedirection bounces the request straight back out, and the browser
+// loops. The proxy is not on a loopback address, so the default known-network check has to go.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -74,6 +92,11 @@ app.MapControllerRoute(
 
 using (var scope = app.Services.CreateScope())
 {
+    // On a host there is no shell to run `dotnet ef database update` from, and the seeding
+    // below needs the tables to exist. Migrating on startup is safe: EF only applies what
+    // the database has not seen yet.
+    await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
+
     // Roles are structural — every environment needs them.
     await DbSeeder.SeedRolesAsync(scope.ServiceProvider);
 
