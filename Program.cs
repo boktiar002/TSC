@@ -1,5 +1,6 @@
 using TSC.Data;
 using TSC.Models;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
@@ -35,6 +36,12 @@ var connectionString = ConnectionString.Normalize(
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+// Persists the Data Protection key ring in Postgres instead of the container's local disk, so
+// auth cookies (including "Remember me") survive a restart and work across multiple instances.
+// Without this, every redeploy or idle-sleep silently signs everyone out.
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<ApplicationDbContext>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {

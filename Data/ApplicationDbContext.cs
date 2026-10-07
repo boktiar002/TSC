@@ -1,10 +1,16 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TSC.Models;
 
 namespace TSC.Data;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+// IDataProtectionKeyContext: without a persisted key ring, every container restart (a deploy,
+// a free-tier idle-sleep, a scale event) generates a fresh encryption key and silently logs
+// everyone out -- "Remember me" included, since the cookie it wrote can no longer be decrypted.
+// Storing the ring in the same Postgres database keys survive restarts and are shared across
+// instances.
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IDataProtectionKeyContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -22,6 +28,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Attendance> Attendances => Set<Attendance>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Notice> Notices => Set<Notice>();
+    public DbSet<Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey> DataProtectionKeys => Set<Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
