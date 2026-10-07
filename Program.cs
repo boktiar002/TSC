@@ -44,14 +44,17 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultUI();
 
 // Identity re-checks the security stamp every 30 minutes by default, so a login removed by
-// the admin keeps working until then. Revalidate every request: one small lookup, and
-// "Remove login" actually means removed. Raise this if the user count ever makes it hurt.
+// the admin keeps working until then. Zero made "Remove login" instant but cost every single
+// navigation a DB round trip before the page's own queries even ran — on Render that stacked
+// up into the slow redirects users were hitting. 30 seconds keeps revocation fast enough while
+// only paying that cost once every 30s per user instead of on every click.
 builder.Services.Configure<SecurityStampValidatorOptions>(options =>
-    options.ValidationInterval = TimeSpan.Zero);
+    options.ValidationInterval = TimeSpan.FromSeconds(30));
 
 // A host like Render terminates TLS at its edge and forwards plain HTTP. Without this the
-// app sees http, UseHttpsRedirection bounces the request straight back out, and the browser
-// loops. The proxy is not on a loopback address, so the default known-network check has to go.
+// app sees every request as http: Secure cookies get dropped, generated absolute URLs come
+// out http, and HSTS never fires. The proxy is not on a loopback address, so the default
+// known-network check has to go.
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
@@ -62,9 +65,14 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+// Bootstrap's CSS/JS and the view HTML are plain text — gzip shrinks them 70-80% for free.
+// Render's edge does TLS but not this, so it's on the app.
+builder.Services.AddResponseCompression();
+
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+app.UseResponseCompression();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -72,7 +80,14 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Dev only. The container binds http://0.0.0.0:$PORT and nothing else, so in deployment this
+// middleware has no HTTPS port to redirect to — it logs "Failed to determine the https port
+// for redirect" and forwards the request unchanged. Render's edge already does http->https,
+// so the redirect is its job, not ours. Locally the https launch profile binds port 7178,
+// which the middleware reads off the server addresses, so dev redirects as before.
+if (app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseRouting();
