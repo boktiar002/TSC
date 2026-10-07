@@ -2,6 +2,7 @@ using TSC.Data;
 using TSC.Models;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 
 // Grading is the one bit of real arithmetic in here; `dotnet run -- selftest` checks it
@@ -88,7 +89,15 @@ if (!app.Environment.IsDevelopment())
 if (app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
-app.UseStaticFiles();
+// Without a Cache-Control header the browser re-validates every css/js/image on every page
+// load (a round trip each, even when the answer is "unchanged"). CSS/JS are cache-busted by
+// asp-append-version, so a long max-age is safe for them; images aren't versioned, so a
+// week is a reasonable middle ground that still picks up a future logo swap reasonably fast.
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+        ctx.Context.Response.Headers.CacheControl = "public,max-age=604800"
+});
 
 app.UseRouting();
 
