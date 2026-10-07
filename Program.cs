@@ -90,6 +90,10 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// Uptime pings land here. No database, no auth, no view — just proof the process is up,
+// which is all a keep-warm monitor needs.
+app.MapGet("/health", () => Results.Text("OK"));
+
 using (var scope = app.Services.CreateScope())
 {
     // Where we actually ended up pointing, minus the password. When a deploy dies on the
@@ -108,6 +112,10 @@ using (var scope = app.Services.CreateScope())
 
     // Roles are structural — every environment needs them.
     await DbSeeder.SeedRolesAsync(scope.ServiceProvider);
+
+    // The first admin on a server, from BOOTSTRAP_ADMIN_EMAIL / BOOTSTRAP_ADMIN_PASSWORD.
+    // No-op when they are unset, so a normal deploy is unaffected.
+    await DbSeeder.SeedAdminFromConfigurationAsync(scope.ServiceProvider, builder.Configuration, app.Logger);
 
     // The default admin account is a published credential. Seeding it outside Development
     // would hand anyone who has seen this repo a way in, so it is deliberately dev-only.

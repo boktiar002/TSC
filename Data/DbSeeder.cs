@@ -64,4 +64,47 @@ public static class DbSeeder
 
         return null;
     }
+
+    // A server's first admin. The dev account above is a published credential and the
+    // `create-admin` command needs a shell, which a container host may not give you -- so the
+    // one path that always exists is configuration: set BOOTSTRAP_ADMIN_EMAIL and
+    // BOOTSTRAP_ADMIN_PASSWORD (optionally BOOTSTRAP_ADMIN_NAME) on the host. Unset, this does
+    // nothing; set with the account already present, it only makes sure the role is attached.
+    public static async Task SeedAdminFromConfigurationAsync(
+        IServiceProvider serviceProvider, IConfiguration configuration, ILogger logger)
+    {
+        var email = configuration["BOOTSTRAP_ADMIN_EMAIL"];
+        var password = configuration["BOOTSTRAP_ADMIN_PASSWORD"];
+
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            return;
+
+        var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var existing = await userManager.FindByEmailAsync(email);
+
+        if (existing != null)
+        {
+            // An account that signs in but holds no role lands on the public page with nothing
+            // on it, which reads as a broken deploy rather than a missing role. Repair it.
+            if (!await userManager.IsInRoleAsync(existing, AdminRole))
+            {
+                var repair = await userManager.AddToRoleAsync(existing, AdminRole);
+
+                logger.LogInformation("Bootstrap admin {Email}: role Admin {Outcome}", email,
+                    repair.Succeeded ? "granted" : string.Join(" ", repair.Errors.Select(e => e.Description)));
+            }
+
+            // The password is deliberately left alone: re-deploying should not silently reset
+            // the credentials of a live account.
+            return;
+        }
+
+        var failure = await CreateAdminAsync(
+            userManager, email, password, configuration["BOOTSTRAP_ADMIN_NAME"] ?? email);
+
+        if (failure != null)
+            logger.LogError("Bootstrap admin {Email} not created: {Failure}", email, failure);
+        else
+            logger.LogInformation("Bootstrap admin {Email} created.", email);
+    }
 }

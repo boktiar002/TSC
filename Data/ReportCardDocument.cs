@@ -95,7 +95,7 @@ public static class ReportCardDocument
 
                 page.Footer().PaddingTop(6).Row(row =>
                 {
-                    row.RelativeItem().Text("TSC — Teacher Student Care")
+                    row.RelativeItem().Text("TSC — Teacher's Student Care")
                         .FontSize(7).FontColor(Muted);
 
                     row.RelativeItem().AlignRight().Text(t =>
@@ -128,7 +128,7 @@ public static class ReportCardDocument
 
                 row.RelativeItem().PaddingLeft(10).Column(c =>
                 {
-                    c.Item().Text("TSC — Teacher Student Care")
+                    c.Item().Text("TSC — Teacher's Student Care")
                         .FontSize(16).Bold().FontColor(Navy);
 
                     c.Item().Text("Coaching centre · Bangladesh")
